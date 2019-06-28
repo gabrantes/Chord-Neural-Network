@@ -1,5 +1,7 @@
 """
+Project: ChordNet
 Author: Gabriel Abrantes
+Email: gabrantes99@gmail.com
 Date: 6/27/2019
 Title: utils.py
 Description: A set of helper functions.
@@ -25,6 +27,9 @@ def note_to_num(str_in):
     for i in range(len(str_in)):
         if str_in[i].isdigit():
             break
+    if str_in[:i] not in note_map:
+        print("\nSkipped invalid note: %s"%str_in)
+        return
     note_num = note_map[str_in[:i]]
     octave = int(str_in[i:])
     note_num = 12*octave + note_num
