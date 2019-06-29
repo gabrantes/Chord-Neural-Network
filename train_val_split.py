@@ -12,15 +12,16 @@ import random
 import math
 import argparse
 
-def train_eval_split(input_file, percent_train=80, percent_val=20, percent_test=0):
+def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_test=0):
     """
     Splits the dataset file using the given percentages. Also, reformats the data.
     Writes data to .txt files: 'train.txt', 'val.txt', 'test.txt'
 
-    Args:   input_file -- the full filepath to the dataset
-            percent_train -- percent of data allocated for training
-            percent_val -- percent of data allocated for validation
-            percent_test -- percent of data allocated for testing 
+    Args:   
+        input_file: the full filepath to the dataset
+        percent_train: percent of data allocated for training
+        percent_val: percent of data allocated for validation
+        percent_test: percent of data allocated for testing 
     """
     assert percent_train + percent_val + percent_test == 100, \
         "Percentages must add up to 100"
