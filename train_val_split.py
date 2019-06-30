@@ -122,8 +122,8 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
             f.write("\n")
     f.close()
 
-    with open(OUTPUT_DIR + '/val.txt', 'w') as f:
-        num_val += num_train
+    num_val += num_train  # for the list slicing
+    with open(OUTPUT_DIR + '/val.txt', 'w') as f:        
         for prog in progressions[num_train:num_val]:
             for el in prog:
                 f.write(str(el) + " ")
@@ -136,6 +136,7 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
                 f.write(str(el) + " ")
             f.write("\n")
     f.close()
+    num_val -= num_train  # back to actual value
 
     print("\n************")
 
@@ -151,6 +152,10 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     print("Total number of progressions:\t\t{}".format(end_num_chords))
     print("Number of prog. with inverted chords:\t{}\t{}".format(end_inv_chords, end_inv_chords/end_num_chords))
     print("Number of prog. with seventh chords:\t{}\t{}".format(end_sev_chords, end_sev_chords/end_num_chords))
+
+    print("\nNumber in train:\t{}".format(num_train))
+    print("Number in val:\t\t{}".format(num_val))
+    print("Number in test:\t\t{}\n".format(len(progressions)-num_train-num_val))
 
 def augment(progression: list) -> list:
     """`Augment` a progression by tranposing it to a new key.
