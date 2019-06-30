@@ -7,7 +7,7 @@ Title: voice.py
 Description: A class to represent a generic voice.
 """
 
-from utils.utils import note_to_num
+from utils.utils import note_to_num, num_to_note
 
 class Voice():
     def __init__(self, low_note: str, high_note: str):
@@ -19,12 +19,11 @@ class Voice():
         
         self.range = self.high_num - self.low_num + 1  # number of notes in voice's range
 
-    def in_range(note: str) -> bool:
+    def in_range(self, note: int) -> bool:
         """Determine whether the given note is in the voice's range."""
-        note_num = note_to_num(note)
-        return (low_num <= note_num) and (note_num <= high_num)
+        return (self.low_num <= note) and (note <= self.high_num)
 
-    def transpose_range(note: str) -> tuple:
+    def transpose_range(self, note: int) -> tuple:
         """Determine the valid number of half-steps to tranpose the
         given note up and down while staying within the voice's range.
 
@@ -36,8 +35,15 @@ class Voice():
             ValueError: if note is out of range.
         """  
         if self.in_range(note):
-            tranpose_up = self.high_num - note_to_num(note)
-            tranpose_down = self.low_num - note_to_num(note)
-            return tranpose_down, tranpose_up
+            transpose_up = self.high_num - note
+            transpose_down = self.low_num - note
+            return transpose_down, transpose_up
         else:
-            raise ValueError('Note is out-of-range', note)
+            raise ValueError('Note is out-of-range', note, num_to_note(note))
+
+    def normalize(self, note: int) -> float:
+        """Convert the note to a float [0, 1] based on this voice's range"""
+        if self.in_range(note):
+            return (note - self.low_num) / self.range
+        else:
+            raise ValueError('Note is out-of-range', note, num_to_note(note)) 

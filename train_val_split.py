@@ -7,14 +7,19 @@ Filename: train_val_split.py
 Description: Splits the dataset (.csv) into training and validation as .txt files
 """
 
-from utils import note_to_num
 import random
 import math
 import argparse
+import numpy as np
+from utils.utils import note_to_num, num_to_note
+from utils.satb import Satb
+
+VERBOSE = False
+OUTPUT_DIR = './data'
 
 def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_test=0):
     """
-    Splits the dataset file using the given percentages. Also, reformats the data.
+    Reformat and augment the dataset, before splitting using the given percentages.
     Writes data to .txt files: 'train.txt', 'val.txt', 'test.txt'
 
     Args:   
@@ -26,78 +31,181 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     assert percent_train + percent_val + percent_test == 100, \
         "Percentages must add up to 100"
 
-
-    chords = []
-    with open(csv_file) as f:
+    # getting chord progressions from input file
+    progressions = []
+    with open(input_file) as f:
         for line in f:
             if "//" not in line:  # ignore lines that are comments
                 elements = line[:-1].split(',')  # remove newline, split elements
-                chords.append([el for el in elements if el != '*'])
+                progressions.append([el for el in elements if el != '*'])
     f.close()
 
-    for chord in chords:
-        for i in range(len(chord)):
-            if not chord[i].isdigit():  # if note
-                chord[i] = note_to_num(chord[i])
+    # convert all notes to ints
+    for prog in progressions:
+        for i in range(len(prog)):
+            if not prog[i].isdigit():  # if note
+                prog[i] = note_to_num(prog[i])
             else:
-                chord[i] = int(chord[i])
-    # every element in chords is now an integer
+                prog[i] = int(prog[i])
+        
+    # remove duplicates and keep track of unique progressions using a set
+    progression_set = set([tuple(prog) for prog in progressions])
+    progressions = [list(prog) for prog in progression_set]
+    
+    beg_num_chords = len(progressions)
+    beg_inv_chords = 0
+    beg_sev_chords = 0
+
+    duplicate_chords = 0
+
+    end_num_chords = beg_num_chords
+    end_inv_chords = 0
+    end_sev_chords = 0
+
+    satb = Satb()
+    for i in range(len(progressions)):
+        if VERBOSE:
+            print(i)        
+
+        aug_count = 4  # number of augmentations to create
+        sev_chord = False
+        inv_chord = False
+        if progressions[i][3] == 1 or progressions[i][10] == 1:  # if seventh chord           
+            aug_count = 10
+            beg_sev_chords += 1
+            end_sev_chords += 1
+            sev_chord = True
+        if progressions[i][4] > 1 or progressions[i][11] > 1:  # if chord not in root-position
+            aug_count = 20
+            beg_inv_chords += 1
+            end_inv_chords += 1
+            inv_chord = True
+
+        # data augmentation
+        for _ in range(aug_count):
+            new_prog = augment(progressions[i])
+
+            if tuple(new_prog) not in progression_set:
+                progressions.append(new_prog)
+                progression_set.add(tuple(new_prog))
+                end_num_chords += 1
+                if inv_chord:
+                    end_inv_chords += 1
+                if sev_chord:
+                    end_sev_chords += 1
+            else:
+                duplicate_chords += 1
+                continue
+
+            if VERBOSE:
+                print("Before:")
+                print("\t{}".format(num_to_note(progressions[i][0])))
+                print("\t{}".format([num_to_note(el) for el in progressions[i][5:9]]))
+                print("\t{}".format([num_to_note(el) for el in progressions[i][12:16]]))
+                print("After:")
+                print("\t{}".format(num_to_note(new_prog[0])))
+                print("\t{}".format([num_to_note(el) for el in new_prog[5:9]]))
+                print("\t{}".format([num_to_note(el) for el in new_prog[12:16]]))
+                print("\n")
 
     shuffle = True
     if shuffle:
-        random.shuffle(chords)
+        random.shuffle(progressions)
 
-    num_train = int( math.floor(len(chords) * (percent_train/100)) )
-    num_val = int( math.floor(len(chords) * (percent_val/100)) )
+    num_train = int(len(progressions) * (percent_train/100))
+    num_val = int(len(progressions) * (percent_val/100))
 
-    with open('./data/train.txt', 'w') as f:
-        for chord in chords[:num_train]:
-            for el in chord:
+    with open(OUTPUT_DIR + '/train.txt', 'w') as f:
+        for prog in progressions[:num_train]:
+            for el in prog:
                 f.write(str(el) + " ")
             f.write("\n")
     f.close()
 
-    with open('./data/val.txt', 'w') as f:
-        for chord in chords[num_train:num_val]:
-            for el in chord:
+    with open(OUTPUT_DIR + '/val.txt', 'w') as f:
+        num_val += num_train
+        for prog in progressions[num_train:num_val]:
+            for el in prog:
                 f.write(str(el) + " ")
             f.write("\n")
     f.close()
 
-    with open('./data/test.txt', 'w') as f:
-        for chord in chords[num_val:]:
-            for el in chord:
+    with open(OUTPUT_DIR + '/test.txt', 'w') as f:
+        for prog in progressions[num_val:]:
+            for el in prog:
                 f.write(str(el) + " ")
             f.write("\n")
     f.close()
+
+    print("\n************")
+
+    print("\nSTART:")
+    print("Total number of progressions:\t\t{}".format(beg_num_chords))
+    print("Number of prog. with inverted chords:\t{}\t{}".format(beg_inv_chords, beg_inv_chords/beg_num_chords))
+    print("Number of prog. with seventh chords:\t{}\t{}".format(beg_sev_chords, beg_sev_chords/beg_num_chords))
+
+    print("\nDuplicate progressions:\t\t{}".format(duplicate_chords))
+    print("(created during augmentation and removed)")
+    
+    print("\nEND:")
+    print("Total number of progressions:\t\t{}".format(end_num_chords))
+    print("Number of prog. with inverted chords:\t{}\t{}".format(end_inv_chords, end_inv_chords/end_num_chords))
+    print("Number of prog. with seventh chords:\t{}\t{}".format(end_sev_chords, end_sev_chords/end_num_chords))
+
+def augment(progression: list) -> list:
+    """`Augment` a progression by tranposing it to a new key.
+
+    Args:
+        progression: a list representing one line from the dataset
+
+    Returns:
+        A list representing the new, tranposed progression.
+    """
+    satb = Satb()
+    lo, hi = satb.transpose_range(progression[5:9], progression[12:16])
+    shift = np.random.randint(lo, hi+1)
+
+    new_progression = progression[:]            
+
+    new_progression[0] = (new_progression[0] + shift) % 12  # tonic (key signature)
+    for j in range(5, 9):  # cur chord
+        new_progression[j] += shift
+    for j in range(12, 16):  # next chord
+        new_progression[j] += shift
+    
+    return new_progression
+    
 
 if __name__ == "__main__":
     parser  = argparse.ArgumentParser(description='Split data into train, validation, and test sets.')
-    parser.add_argument("--train", type=int, help="Percentage of train set. DEFAULT: 80")
-    parser.add_argument("--val", type=int, help="Percentage of validation set. DEFAULT: 20")
-    parser.add_argument("--test", type=int, help="Percentage of test set. DEFAULT: 0")
-    praser.add_argument("--input", help="Filepath to dataset. DEFAULT: ./data/chords.csv")
+    parser.add_argument("--train", type=int, 
+        help="Percentage of train set. DEFAULT: 80",
+        default=80)
+    parser.add_argument("--val", type=int, 
+        help="Percentage of validation set. DEFAULT: 20",
+        default=20)
+    parser.add_argument("--test", type=int, 
+        help="Percentage of test set. DEFAULT: 0",
+        default=0)
+    parser.add_argument("--input", 
+        help="Filepath to dataset. DEFAULT: ./data/chords.csv",
+        default="./data/chords.csv")
+    parser.add_argument("--output", 
+        help="The output directory to save the resulting .txt files. DEFAULT: ./data/",
+        default="./data/")
+    parser.add_argument("-v", "--verbose",
+        help="Prints out chords for debugging. DEFAULT: False",
+        action='store_true')
 
     args = parser.parse_args()
 
-    percent_train = 80
-    percent_val = 20
-    percent_test = 0
-    input_file = "./data/chords.csv"
-
-    if args.train is not None:
-        percent_train = args.train
-    if args.val is not None:
-        percent_val = args.val
-    if args.test is not None:
-        percent_test = args.test
-    if args.input is not None:
-        input_file = args.input
+    if args.verbose:
+        VERBOSE = True
+    OUTPUT_DIR = args.output
 
     train_eval_split(
-        input_file,
-        percent_train=percent_train,
-        percent_val = percent_val,
-        percent_test=percent_test
+        args.input,
+        percent_train=args.train,
+        percent_val=args.val,
+        percent_test=args.test
         )
-

@@ -10,6 +10,7 @@ Description:
 """
 
 from utils.voice import Voice
+from utils.utils import num_to_note
 
 class Satb():
     def __init__(self):
@@ -24,7 +25,7 @@ class Satb():
         """Determine whether the given chord is valid for the SATB choir.
 
         Args:
-            chord: a chord of notes: [soprano, alto, tenor, bass]
+            chord: a chord of notes as ints: [soprano, alto, tenor, bass]
 
         Returns:
             True if valid, False otherwise.
@@ -43,13 +44,13 @@ class Satb():
                 return False
         return True
 
-    def transpose_range(self, chord: list) -> tuple:
+    def transpose_range_chord(self, chord: list) -> tuple:
         """
         Determine the valid number of half-steps to tranpose the
-        given chord up and down.
+        given chord up and down while staying within range of voices.
 
         Args:
-            chord: a list of notes to tranpose: [soprano, alto, tenor, bass]
+            chord: a list of notes as ints: [soprano, alto, tenor, bass]
 
         Returns:
             Number of valid steps down (nonpositive)
@@ -59,15 +60,57 @@ class Satb():
             ValueError: if chord is invalid.
         """
         if self.valid_chord(chord):
-            tranpose_down = -self.voices[3].range - 1  # values outside the largest range
-            tranpose_up = self.voices[3].range + 1
+            transpose_down = -self.voices[3].range - 1  # values outside the largest range
+            transpose_up = self.voices[3].range + 1
 
-            for voice, note in zip(self.voices, chord):
-                voice_down, voice_up = voice.tranpose_range(note)
-                tranpose_up = min(tranpose_up, voice_up)
-                tranpose_down = max(tranpose_down, voice_down)
-            return tranpose_down, transpose_up
+            for voice, note in zip(self.voices, chord):                
+                voice_down, voice_up = voice.transpose_range(note)
+                transpose_up = min(transpose_up, voice_up)
+                transpose_down = max(transpose_down, voice_down)
+            return transpose_down, transpose_up
         else:
-            raise ValueError("Chord is invalid", chord)
+            raise ValueError("Chord is invalid", chord, [num_to_note(el) for el in chord])
+
+    def transpose_range(self, *args) -> tuple:
+        """
+        Determine the valid number of half-steps to tranpose all
+        given chords up and down while staying within range of voices.
+
+        Args:
+            *args: the chords, where each chord is a list of ints
+
+        Returns:
+            Number of valid steps down (nonpositive)
+            Number of valid steps up (nonnegative)
+        """
+        transpose_down = -self.voices[3].range - 1
+        transpose_up = self.voices[3].range + 1
+
+        for chord in args:
+            chord_down, chord_up = self.transpose_range_chord(chord)
+            transpose_down = max(transpose_down, chord_down)
+            transpose_up = min(transpose_up, chord_up)
+        return transpose_down, transpose_up
 
 
+    def normalize(self, chord: list) -> list:
+        """
+        Convert notes in the chord to floats [0, 1] based on the ranges
+        of the corresponding voices.
+
+        Args:
+            chord: a list of notes as ints: [soprano, alto, tenor, bass]
+
+        Returns:
+            list of floats (converted notes) as [soprano, alto, tenor, bass]
+
+        Raises:
+            ValueError: if chord is invalid.
+        """
+        if self.valid_chord(chord):
+            norm_chord = []
+            for voice, note in zip(self.voices, chord):
+                norm_chord.append(voice.normalize(note))
+            return norm_chord            
+        else:
+            raise ValueError("Chord is invalid", chord, [num_to_note(el) for el in chord])

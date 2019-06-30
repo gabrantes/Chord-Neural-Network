@@ -59,6 +59,17 @@ def num_to_note(note_int: int) -> str:
 
 # some code to test the functions
 if __name__ == "__main__":
+    key1 = 0
+    key1 = num_to_note(key1)
+    arr1 = [53, 50, 47, 43]
+    key2 = 9
+    key2 = num_to_note(key2)
+    arr2 = [50, 47, 44, 40]
+    arr1 = [num_to_note(el) for el in arr1]
+    arr2 = [num_to_note(el) for el in arr2]
+    print("before augment:\t{}\t{}".format(arr1, key1))
+    print("after augment:\t{}\t{}".format(arr2, key2))
+
     test_note = "G4"
     print("\n" + test_note)
     print(note_to_num(test_note))
