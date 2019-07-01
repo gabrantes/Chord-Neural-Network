@@ -2,7 +2,7 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/29/2019
+Date: 6/30/2019
 Title: voice.py
 Description: A class to represent a generic voice.
 """
@@ -30,9 +30,6 @@ class Voice():
         Returns:
             Number of valid steps down (nonpositive)
             Number of valid steps up (nonnegative)
-
-        Raises:
-            ValueError: if note is out of range.
         """  
         if self.in_range(note):
             transpose_up = self.high_num - note
@@ -47,3 +44,17 @@ class Voice():
             return (note - self.low_num) / self.range
         else:
             raise ValueError('Note is out-of-range', note, num_to_note(note)) 
+
+    def scale(self, note: int) -> int:
+        """Scale the note from [self.low_num, self.high_num] to [0, self.range)"""
+        if self.in_range(note):
+            return (note - self.low_num)
+        else:
+            raise ValueError('Note is out-of-range', note, num_to_note(note)) 
+
+    def unscale(self, scaled_note: int) -> int:
+        """Unscale the note from [0, self.range) to [self.low_num, self.high_num]"""
+        if (scaled_note < self.range):
+            return (scaled_note + self.low_num)
+        else:
+            raise ValueError('Note is not scaled', note, num_to_note(note)) 

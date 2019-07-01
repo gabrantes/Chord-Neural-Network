@@ -2,10 +2,12 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/29/2019
+Date: 6/30/2019
 Title: utils.py
 Description: A set of helper functions.
 """
+
+import matplotlib.pyplot as plt
 
 def note_to_num(note_str: str) -> int:
     """Convert a musical pitch from string representation to an integer.
@@ -56,6 +58,70 @@ def num_to_note(note_int: int) -> str:
     }
     note_str = rev_note_map[note_int % 12] + octave
     return note_str
+
+def one_hot(val: int, length: int) -> list:
+    """Returns a one-hot array of the given length, where the value
+    at index=val is 1.
+    """
+    if val >= length:
+        raise ValueError("Invalid: val >= length", val, length)
+    arr = [0] * length
+    arr[val] = 1
+    return arr
+
+def plot(history):
+    """
+    Using matplotlib, plot accuracy and loss for the model.
+
+    Args:
+        history: a Keras History object
+    """
+    plt.plot(history.history['soprano_sparse_categorical_accuracy'], label='soprano')
+    plt.plot(history.history['alto_sparse_categorical_accuracy'], label='alto')
+    plt.plot(history.history['tenor_sparse_categorical_accuracy'], label='tenor')
+    plt.plot(history.history['bass_sparse_categorical_accuracy'], label='bass')
+    plt.title('Training accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper left')
+    plt.savefig('./train_acc.png')
+    plt.clf()
+
+    plt.plot(history.history['val_soprano_sparse_categorical_accuracy'], label='soprano')
+    plt.plot(history.history['val_alto_sparse_categorical_accuracy'], label='alto')
+    plt.plot(history.history['val_tenor_sparse_categorical_accuracy'], label='tenor')
+    plt.plot(history.history['val_bass_sparse_categorical_accuracy'], label='bass')
+    plt.title('Validation accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper left')
+    plt.savefig('./val_acc.png')
+    plt.clf()
+
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'], label='loss')
+    plt.plot(history.history['soprano_loss'], label='soprano')
+    plt.plot(history.history['alto_loss'], label='alto')
+    plt.plot(history.history['tenor_loss'], label='tenor')
+    plt.plot(history.history['bass_loss'], label='bass')
+    plt.title('Training loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper left')
+    plt.savefig('./train_loss.png')
+    plt.clf()
+
+    plt.plot(history.history['val_loss'], label='loss')
+    plt.plot(history.history['val_soprano_loss'], label='soprano')
+    plt.plot(history.history['val_alto_loss'], label='alto')
+    plt.plot(history.history['val_tenor_loss'], label='tenor')
+    plt.plot(history.history['val_bass_loss'], label='bass')
+    plt.title('Validation loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper left')
+    plt.savefig('./val_loss.png')
+    plt.clf()
 
 # some code to test the functions
 if __name__ == "__main__":

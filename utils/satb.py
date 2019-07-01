@@ -2,7 +2,7 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/29/2019
+Date: 6/30/2019
 Title: satb.py
 Description: 
     A class to represent and encapsulate four (4) voices:
@@ -55,9 +55,6 @@ class Satb():
         Returns:
             Number of valid steps down (nonpositive)
             Number of valid steps up (nonnegative)
-        
-        Raises:
-            ValueError: if chord is invalid.
         """
         if self.valid_chord(chord):
             transpose_down = -self.voices[3].range - 1  # values outside the largest range
@@ -92,25 +89,26 @@ class Satb():
             transpose_up = min(transpose_up, chord_up)
         return transpose_down, transpose_up
 
-
     def normalize(self, chord: list) -> list:
-        """
-        Convert notes in the chord to floats [0, 1] based on the ranges
-        of the corresponding voices.
-
-        Args:
-            chord: a list of notes as ints: [soprano, alto, tenor, bass]
-
-        Returns:
-            list of floats (converted notes) as [soprano, alto, tenor, bass]
-
-        Raises:
-            ValueError: if chord is invalid.
-        """
+        """Normalize every note in each chord to the corresponding voice's range"""
         if self.valid_chord(chord):
-            norm_chord = []
-            for voice, note in zip(self.voices, chord):
-                norm_chord.append(voice.normalize(note))
-            return norm_chord            
+            norm_chord = [voice.normalize(note) for voice, note in zip(self.voices, chord)]
+            return norm_chord
         else:
             raise ValueError("Chord is invalid", chord, [num_to_note(el) for el in chord])
+
+    def scale(self, chord: list) -> list:
+        """Scale every note in the chord to the corresponding voice's range"""        
+        if self.valid_chord(chord):
+            scaled_chord = [voice.scale(note) for voice, note in zip(self.voices, chord)]
+            return scaled_chord
+        else:
+            raise ValueError("Chord is invalid", chord, [num_to_note(el) for el in chord])
+
+    def unscale(self, chord: list) -> list:
+        """Unscale every note in the chord to the corresponding voice's range"""
+        unscaled_chord = [voice.unscale(note) for voice, note in zip(self.voices, chord)]
+        if self.valid_chord(unscaled_chord):
+            return unscaled_chord
+        else:
+            raise ValueError("Unscaled chord is invalid", chord, [num_to_note(el) for el in chord])

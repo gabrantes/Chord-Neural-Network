@@ -2,16 +2,16 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/27/2019
-Filename: train_val_split.py
-Description: Splits the dataset (.csv) into training and validation as .txt files
+Date: 6/30/2019
+Filename: preprocess_split.py
+Description: Preprocess dataset and splits into training and validation as .txt files
 """
 
 import random
 import math
 import argparse
 import numpy as np
-from utils.utils import note_to_num, num_to_note
+from utils.utils import note_to_num, num_to_note, one_hot
 from utils.satb import Satb
 
 VERBOSE = False
@@ -47,6 +47,24 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
                 prog[i] = note_to_num(prog[i])
             else:
                 prog[i] = int(prog[i])
+
+   
+    satb = Satb()
+    for i in range(len(progressions)):
+        # scale all chords
+        progressions[i][5:9] = satb.scale(progressions[i][5:9])
+        progressions[i][12:16] = satb.scale(progressions[i][12:16])
+
+        # one-hot the tonic / key-signature
+        progressions[i][0] = tuple(one_hot(progressions[i][0], 12))
+
+        # one-hot the scale-degrees
+        progressions[i][2] = tuple(one_hot(progressions[i][2]-1, 7))
+        progressions[i][9] = tuple(one_hot(progressions[i][9]-1, 7))
+
+        # one-hot the inversions
+        progressions[i][4] = tuple(one_hot(progressions[i][4], 4))
+        progressions[i][11] = tuple(one_hot(progressions[i][11], 4))
         
     # remove duplicates and keep track of unique progressions using a set
     progression_set = set([tuple(prog) for prog in progressions])
@@ -62,7 +80,6 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     end_inv_chords = 0
     end_sev_chords = 0
 
-    satb = Satb()
     for i in range(len(progressions)):
         if VERBOSE:
             print(i)        
@@ -75,7 +92,7 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
             beg_sev_chords += 1
             end_sev_chords += 1
             sev_chord = True
-        if progressions[i][4] > 1 or progressions[i][11] > 1:  # if chord not in root-position
+        if progressions[i][4][0] == 0 or progressions[i][11][0] == 0:  # if chord not in root-position
             aug_count = 20
             beg_inv_chords += 1
             end_inv_chords += 1
@@ -99,13 +116,13 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
 
             if VERBOSE:
                 print("Before:")
-                print("\t{}".format(num_to_note(progressions[i][0])))
-                print("\t{}".format([num_to_note(el) for el in progressions[i][5:9]]))
-                print("\t{}".format([num_to_note(el) for el in progressions[i][12:16]]))
+                print("\t{}".format(num_to_note(progressions[i][0].index(1))))
+                print("\t{}".format([num_to_note(el) for el in satb.unscale(progressions[i][5:9])]))
+                print("\t{}".format([num_to_note(el) for el in satb.unscale(progressions[i][12:16])]))
                 print("After:")
-                print("\t{}".format(num_to_note(new_prog[0])))
-                print("\t{}".format([num_to_note(el) for el in new_prog[5:9]]))
-                print("\t{}".format([num_to_note(el) for el in new_prog[12:16]]))
+                print("\t{}".format(num_to_note(new_prog[0].index(1))))
+                print("\t{}".format([num_to_note(el) for el in satb.unscale(new_prog[5:9])]))
+                print("\t{}".format([num_to_note(el) for el in satb.unscale(new_prog[12:16])]))
                 print("\n")
 
     shuffle = True
@@ -118,7 +135,11 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     with open(OUTPUT_DIR + '/train.txt', 'w') as f:
         for prog in progressions[:num_train]:
             for el in prog:
-                f.write(str(el) + " ")
+                if isinstance(el, tuple):
+                    for e in el:
+                        f.write(str(e) + " ")
+                else:
+                    f.write(str(el) + " ")
             f.write("\n")
     f.close()
 
@@ -126,14 +147,22 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     with open(OUTPUT_DIR + '/val.txt', 'w') as f:        
         for prog in progressions[num_train:num_val]:
             for el in prog:
-                f.write(str(el) + " ")
+                if isinstance(el, tuple):
+                    for e in el:
+                        f.write(str(e) + " ")
+                else:
+                    f.write(str(el) + " ")
             f.write("\n")
     f.close()
 
     with open(OUTPUT_DIR + '/test.txt', 'w') as f:
         for prog in progressions[num_val:]:
             for el in prog:
-                f.write(str(el) + " ")
+                if isinstance(el, tuple):
+                    for e in el:
+                        f.write(str(e) + " ")
+                else:
+                    f.write(str(el) + " ")
             f.write("\n")
     f.close()
     num_val -= num_train  # back to actual value
@@ -161,18 +190,22 @@ def augment(progression: list) -> list:
     """`Augment` a progression by tranposing it to a new key.
 
     Args:
-        progression: a list representing one line from the dataset
+        progression: a list representing one line from the dataset (with scaled chords)
 
     Returns:
-        A list representing the new, tranposed progression.
+        A list representing the new, tranposed progression (still with scaled chords).
     """
     satb = Satb()
-    lo, hi = satb.transpose_range(progression[5:9], progression[12:16])
+    lo, hi = satb.transpose_range(satb.unscale(progression[5:9]), satb.unscale(progression[12:16]))
     shift = np.random.randint(lo, hi+1)
 
     new_progression = progression[:]            
 
-    new_progression[0] = (new_progression[0] + shift) % 12  # tonic (key signature)
+    # tonic (key signature)
+    cur_key = new_progression[0].index(1)
+    new_key = (cur_key + shift) % 12
+    new_progression[0] = tuple(one_hot(new_key, 12))
+
     for j in range(5, 9):  # cur chord
         new_progression[j] += shift
     for j in range(12, 16):  # next chord
