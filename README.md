@@ -1,4 +1,4 @@
-# ChordNet
+# ChordNet [WIP]
 
 In traditional music theory, there are many guidelines and rules when writing chord progressions for four voice parts. This is also referred to as four-part harmony. This project develops a multi-output regression model, ChordNet, to take a current chord and return the correct voicings for the next chord.
 
