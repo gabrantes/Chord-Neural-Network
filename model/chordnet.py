@@ -8,14 +8,19 @@ Description: Defines the network architecture
 """
 
 from keras.models import Model
-from keras.layers import Input, Dense, Activation, BatchNormalization
+from keras.layers import Input, Dense, BatchNormalization
+from keras.initializers import glorot_normal
 from keras.optimizers import Adam
 from utils.satb import Satb
 
 class ChordNet():
     @staticmethod
     def build_voice_branch(name, inputs, voice_range, final_act='softmax'):
-        x = Dense(64, activation='relu')(inputs)
+        x = Dense(
+            64,
+            kernel_initializer=glorot_normal(),
+            activation='relu'
+            )(inputs)
         x = Dense(64, activation='relu')(x)
         x = Dense(64, activation='relu')(x)
         x = Dense(16, activation='relu')(x)
@@ -26,8 +31,16 @@ class ChordNet():
     @staticmethod
     def build(input_shape=(41,), final_act='softmax'):
         inputs = Input(shape=input_shape)
-        shared = Dense(128, activation='relu')(inputs)
-        shared = Dense(128, activation='relu')(shared)        
+        shared = Dense(
+            128,
+            kernel_initializer=glorot_normal(),
+            activation='relu'
+            )(inputs)
+        shared = Dense(
+            128,
+            kernel_initializer=glorot_normal(),
+            activation='relu'
+            )(shared)        
         shared = BatchNormalization()(shared)  # added batchnorm
 
         satb = Satb()
