@@ -9,6 +9,7 @@ Description: Defines the network architecture
 
 from keras.models import Model
 from keras.layers import Input, Dense, Activation
+from keras.optimizers import Adam
 from utils.satb import Satb
 
 class ChordNet():
@@ -54,6 +55,26 @@ class ChordNet():
             inputs=inputs,
             outputs=[soprano, alto, tenor, bass],
             name="ChordNet"
+            )
+        
+        losses = {
+        "soprano": "sparse_categorical_crossentropy",
+        "alto": "sparse_categorical_crossentropy",
+        "tenor": "sparse_categorical_crossentropy",
+        "bass": "sparse_categorical_crossentropy"
+        }
+        loss_weights = {
+            "soprano": 1.0,
+            "alto": 1.0,
+            "tenor": 1.0,
+            "bass": 1.0
+        }
+
+        model.compile(
+            optimizer=Adam(), 
+            loss=losses, 
+            loss_weights=loss_weights,
+            metrics=['sparse_categorical_accuracy']
             )
         
         return model
