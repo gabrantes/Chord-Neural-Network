@@ -42,7 +42,9 @@ def train():
     
     tensorboard = TrainValTensorBoard(
         log_dir=log_dir,
-        write_graph=True
+        write_graph=True,
+        histogram_freq=10,
+        write_grads=True
         )
     callbacks_list = [checkpoint, tensorboard]
 
