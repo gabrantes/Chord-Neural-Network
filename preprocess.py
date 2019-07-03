@@ -191,13 +191,13 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
 
 if __name__ == "__main__":
     parser  = argparse.ArgumentParser(description='Split data into train, validation, and test sets.')
-    parser.add_argument("--train", type=int, 
+    parser.add_argument("--train", type=float, 
         help="Percentage of train set. DEFAULT: 80",
         default=80)
-    parser.add_argument("--val", type=int, 
+    parser.add_argument("--val", type=float, 
         help="Percentage of validation set. DEFAULT: 20",
         default=20)
-    parser.add_argument("--test", type=int, 
+    parser.add_argument("--test", type=float, 
         help="Percentage of test set. DEFAULT: 0",
         default=0)
     parser.add_argument("--input", 

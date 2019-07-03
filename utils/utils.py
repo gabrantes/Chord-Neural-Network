@@ -72,33 +72,29 @@ def one_hot(val: int, length: int) -> list:
 
 # some code to test the functions
 if __name__ == "__main__":
-    key1 = 0
-    key1 = num_to_note(key1)
-    arr1 = [53, 50, 47, 43]
-    key2 = 9
-    key2 = num_to_note(key2)
-    arr2 = [50, 47, 44, 40]
+    arr1 = [54, 49, 46, 42]
+    arr2 = [62, 59, 53, 43]
     arr1 = [num_to_note(el) for el in arr1]
     arr2 = [num_to_note(el) for el in arr2]
-    print("before augment:\t{}\t{}".format(arr1, key1))
-    print("after augment:\t{}\t{}".format(arr2, key2))
+    print("arr1:\t{}".format(arr1))
+    print("arr1:\t{}".format(arr2))
 
-    test_note = "G4"
-    print("\n" + test_note)
-    print(note_to_num(test_note))
-    print("reversed:")
-    print(num_to_note(note_to_num(test_note)))
+    # test_note = "G4"
+    # print("\n" + test_note)
+    # print(note_to_num(test_note))
+    # print("reversed:")
+    # print(num_to_note(note_to_num(test_note)))
 
-    print("\nCb1 == B0")
-    result = str(note_to_num("Cb1")) + " == " + str(note_to_num("B0"))
-    print(result)
-    print("reversed:")
-    result = num_to_note(note_to_num("Cb1")) + " == " + num_to_note(note_to_num("B0"))
-    print(result)
+    # print("\nCb1 == B0")
+    # result = str(note_to_num("Cb1")) + " == " + str(note_to_num("B0"))
+    # print(result)
+    # print("reversed:")
+    # result = num_to_note(note_to_num("Cb1")) + " == " + num_to_note(note_to_num("B0"))
+    # print(result)
 
-    print("\nB#0 == C1")
-    result = str(note_to_num("B#0")) + " == " + str(note_to_num("C1"))
-    print(result)
-    print("reversed:")
-    result = num_to_note(note_to_num("B#0")) + " == " + num_to_note(note_to_num("C1"))
-    print(result)
+    # print("\nB#0 == C1")
+    # result = str(note_to_num("B#0")) + " == " + str(note_to_num("C1"))
+    # print(result)
+    # print("reversed:")
+    # result = num_to_note(note_to_num("B#0")) + " == " + num_to_note(note_to_num("C1"))
+    # print(result)

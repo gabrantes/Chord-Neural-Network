@@ -13,7 +13,6 @@ import os
 
 from model.chordnet import ChordNet
 from model.train_val_tensorboard import TrainValTensorBoard
-from model.dead_relu_detector import DeadReluDetector
 from model.data_generator import generate_prog, read_data
 
 from keras.utils.vis_utils import plot_model
