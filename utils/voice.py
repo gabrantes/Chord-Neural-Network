@@ -3,8 +3,9 @@ Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 6/30/2019
-Title: voice.py
-Description: A class to represent a generic voice.
+Filename: voice.py
+Description: 
+    A class to represent a generic voice.
 """
 
 from utils.utils import note_to_num, num_to_note

@@ -2,16 +2,18 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/30/2019
-Filename: preprocess_split.py
-Description: Preprocess dataset and splits into training and validation as .txt files
+Date: 7/2/2019
+Filename: preprocess.py
+Description: 
+    Preprocess dataset, augments, and splits into training and validation as .txt files
 """
 
 import random
 import math
 import argparse
 import numpy as np
-from utils.utils import note_to_num, num_to_note, one_hot, augment
+from utils.utils import note_to_num, num_to_note, one_hot
+from utils.aug import augment
 from utils.satb import Satb
 
 VERBOSE = False
@@ -54,6 +56,17 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
         # scale all chords
         progressions[i][5:9] = satb.scale(progressions[i][5:9])
         progressions[i][12:16] = satb.scale(progressions[i][12:16])
+
+        # one-hot the tonic / key-signature
+        progressions[i][0] = tuple(one_hot(progressions[i][0], 12))
+
+        # one-hot the scale-degrees
+        progressions[i][2] = tuple(one_hot(progressions[i][2]-1, 7))
+        progressions[i][9] = tuple(one_hot(progressions[i][9]-1, 7))
+
+        # one-hot the inversions
+        progressions[i][4] = tuple(one_hot(progressions[i][4], 4))
+        progressions[i][11] = tuple(one_hot(progressions[i][11], 4))
         
     # remove duplicates and keep track of unique progressions using a set
     progression_set = set([tuple(prog) for prog in progressions])
@@ -81,7 +94,7 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
             beg_sev_chords += 1
             end_sev_chords += 1
             sev_chord = True
-        if progressions[i][4] > 0 or progressions[i][11] > 0:  # if chord not in root-position
+        if progressions[i][4][0] == 0 or progressions[i][11][0] == 0:  # if chord not in root-position
             aug_count = 20
             beg_inv_chords += 1
             end_inv_chords += 1
@@ -105,11 +118,11 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
 
             if VERBOSE:
                 print("Before:")
-                print("\t{}".format(num_to_note(progressions[i][0])))
+                print("\t{}".format(num_to_note(progressions[i][0].index(1))))
                 print("\t{}".format([num_to_note(el) for el in satb.unscale(progressions[i][5:9])]))
                 print("\t{}".format([num_to_note(el) for el in satb.unscale(progressions[i][12:16])]))
                 print("After:")
-                print("\t{}".format(num_to_note(new_prog[0])))
+                print("\t{}".format(num_to_note(new_prog[0].index(1))))
                 print("\t{}".format([num_to_note(el) for el in satb.unscale(new_prog[5:9])]))
                 print("\t{}".format([num_to_note(el) for el in satb.unscale(new_prog[12:16])]))
                 print("\n")
@@ -121,6 +134,7 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
     num_train = int(len(progressions) * (percent_train/100))
     num_val = int(len(progressions) * (percent_val/100))
 
+    # write to files
     with open(OUTPUT_DIR + '/train.txt', 'w') as f:
         for prog in progressions[:num_train]:
             for el in prog:

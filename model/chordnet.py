@@ -3,8 +3,9 @@ Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 7/1/2019
-Title: chordnet.py
-Description: Defines the network architecture
+Filename: chordnet.py
+Description:
+    Defines the network architecture.
 """
 
 from keras.models import Model
@@ -41,7 +42,7 @@ class ChordNet():
             kernel_initializer=glorot_normal(),
             activation='relu'
             )(shared)        
-        shared = BatchNormalization()(shared)  # added batchnorm
+        shared = BatchNormalization()(shared)
 
         satb = Satb()
         soprano = ChordNet.build_voice_branch(

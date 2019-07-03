@@ -3,8 +3,9 @@ Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 6/30/2019
-Title: utils.py
-Description: A set of helper functions.
+Filename: utils.py
+Description: 
+    A set of various helper functions.
 """
 
 import matplotlib.pyplot as plt

@@ -2,10 +2,12 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 6/30/2019
-Title: data_generator.py
-Description: Defines a custom generator for accessing and processing
-the custom dataset. (TODO)
+Date: 7/2/2019
+Filename: data_generator.py
+Description: 
+    Defines a custom generator for accessing and processing the
+    custom dataset. Performs real-time data augmentation on the chord
+    progressions.
 """
 
 import numpy as np
@@ -13,19 +15,42 @@ from utils.utils import one_hot
 from utils.aug import augment
 
 def generate_prog(input_file, batch_size, aug=True):
+    """Custom generator for use with Keras fit_generator.
+    Performs real-time data augmentation by transposing chord progressions
+    to random keys.
+
+    Args:
+        input_file: filepath to the PRE-PROCESSED input files (.txt)
+        batch_size: batch size
+        aug:        if True, perform real-time data augmentation.
+
+    Yields:
+        inputs: ndarray of size (batch_size, 41)
+        soprano, alto, tenor, bass: ndarrays of size (batch_size, 1)
+    """
     dataset = []
     with open(input_file) as f:
         for line in f.read().splitlines():
-            dataset.append([obj for obj in line.split()])
-    f.close()
+            dataset_row = []
+            line = [int(obj) for obj in line.split()]
+            dataset_row.append(tuple([el for el in line[:12]]))  # key
+            dataset_row.append(line[12])
 
-    for i in range(len(dataset)):
-        dataset[i] = [int(el) for el in dataset[i]]    
+            dataset_row.append(tuple([el for el in line[13:20]]))  # cur_degree
+            dataset_row.append(line[20])  # cur_sev
+            dataset_row.append(tuple([el for el in line[21:25]]))  # cur_inv
+            dataset_row.extend(line[25:29])  # cur_chord
+
+            dataset_row.append(tuple([el for el in line[29:36]]))  # next_degree
+            dataset_row.append(line[36])  # next_sev
+            dataset_row.append(tuple([el for el in line[37:41]]))  # next_inv
+            dataset_row.extend(line[41:])  # next_chord
+
+            dataset.append(dataset_row)
+    f.close()
 
     count = 0
     while True:
-        count = count % len(dataset)
-
         inputs = np.zeros((batch_size, 41))
         soprano = np.zeros((batch_size, 1))
         alto = np.zeros((batch_size, 1))
@@ -33,21 +58,23 @@ def generate_prog(input_file, batch_size, aug=True):
         bass = np.zeros((batch_size, 1))
 
         for i in range(batch_size):
+            count = count % len(dataset)
             prog = dataset[count]
+            assert len(prog) == 16
 
-            if aug and np.random.randint(0, 2) == 0:  # 50% chance of augmentation
+            if aug and np.random.randint(0, 100) < 75:  # 75% chance of augmentation
                 prog = augment(prog)
 
             # one-hotting categories
-            inputs[i, :12] = one_hot(prog[0], 12)
+            inputs[i, :12] = list(prog[0])
             inputs[i, 12] = prog[1]
-            inputs[i, 13:20] = one_hot(prog[2]-1, 7)
+            inputs[i, 13:20] = list(prog[2])
             inputs[i, 20] = prog[3]
-            inputs[i, 21:25] = one_hot(prog[4], 4)
+            inputs[i, 21:25] = list(prog[4])
             inputs[i, 25:29] = prog[5:9]
-            inputs[i, 29:36] = one_hot(prog[9]-1, 7)
+            inputs[i, 29:36] = list(prog[9])
             inputs[i, 36] = prog[10]
-            inputs[i, 37:] = one_hot(prog[11], 4)
+            inputs[i, 37:] = list(prog[11])
 
             soprano[i]  = prog[12]
             alto[i]     = prog[13]
@@ -55,13 +82,13 @@ def generate_prog(input_file, batch_size, aug=True):
             bass[i]     = prog[15]
 
             count += 1
-        print("inputs.shape = {}".format(inputs.shape))
         yield (inputs, {'soprano': soprano, 'alto': alto, 'tenor': tenor, 'bass': bass})
     
 
 def read_data(input_file):
     """
-    Handles the .txt input file and returns ndarrays, splitting up the inputs and outputs
+    Handles an entire .txt input file and returns ndarrays, splitting up
+    the inputs and outputs
 
     Returns:
         ndarray for each inputs, soprano, alto, tenor, and bass

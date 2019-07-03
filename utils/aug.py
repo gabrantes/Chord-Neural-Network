@@ -1,14 +1,28 @@
+"""
+Project: ChordNet
+Author: Gabriel Abrantes
+Email: gabrantes99@gmail.com
+Date: 7/2/2019
+Filename: aug.py
+Description: 
+    Contains functions for augmenting the dataeset.
+"""
+
 from utils.satb import Satb
+from utils.utils import one_hot
 import numpy as np
 
 def augment(progression: list) -> list:
-    """`Augment` a progression by tranposing it to a new key.
+    """
+    `Augment` a progression by tranposing it to a new key.
 
     Args:
-        progression: a list representing one line from the dataset (with scaled chords)
+        progression: a list representing one line from the dataset 
+                    (with scaled chords and one-hot tuples)
 
     Returns:
-        A list representing the new, tranposed progression (still with scaled chords).
+        A list representing the new, tranposed progression
+        (still with scaled chords and one-hot tuples).
     """
     assert len(progression) == 16
 
@@ -19,7 +33,9 @@ def augment(progression: list) -> list:
     new_progression = progression[:]            
 
     # tonic (key signature)
-    new_progression[0] = (new_progression[0] + shift) % 12
+    cur_key = new_progression[0].index(1)
+    new_key = (cur_key + shift) % 12
+    new_progression[0] = tuple(one_hot(new_key, 12))
 
     for j in range(5, 9):  # cur chord
         new_progression[j] += shift

@@ -2,9 +2,10 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 7/1/2019
-Title: train.py
-Description: Trains the neural network.
+Date: 7/2/2019
+Filename: train.py
+Description: 
+    Trains the neural network.
 """
 
 import time
@@ -45,31 +46,24 @@ def train():
     tensorboard = TrainValTensorBoard(
         log_dir=log_dir,
         write_graph=True,
-        histogram_freq=10,
-        write_grads=True
         )    
 
-    train_X, train_S, train_A, train_T, train_B = read_data("./data/train.txt")
+    num_train_data = 0
+    with open("./data/train.txt") as f:
+        num_train_data = len(f.readlines())
+    f.close()
+
     val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
 
-    print("val_X.shape = {}".format(val_X.shape))
-    assert val_X.shape[1] == 41
-    assert val_S.shape[1] == 1
-    assert val_A.shape[1] == 1
-    assert val_T.shape[1] == 1
-    assert val_B.shape[1] == 1
-
-    dead_relu_detector = DeadReluDetector(x_train=train_X)
-
-    callbacks_list = [checkpoint, tensorboard, dead_relu_detector]
+    callbacks_list = [checkpoint, tensorboard]
 
     train_gen = generate_prog("./data/train.txt", BATCH_SIZE, aug=True)
 
     H = model.fit_generator(
         train_gen,
-        steps_per_epoch = 1971 // BATCH_SIZE,
+        steps_per_epoch = num_train_data // BATCH_SIZE,
         epochs = EPOCHS,
-        verbose = 1,
+        verbose = 2,
         callbacks = callbacks_list,
         validation_data = (
             val_X,

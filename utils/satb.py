@@ -3,7 +3,7 @@ Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 6/30/2019
-Title: satb.py
+Filename: satb.py
 Description: 
     A class to represent and encapsulate four (4) voices:
     soprano, alto, tenor, bass (SATB)
