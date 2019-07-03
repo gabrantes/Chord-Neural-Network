@@ -11,8 +11,9 @@ import time
 import os
 
 from model.chordnet import ChordNet
-from model.data_generator import read_data
 from model.train_val_tensorboard import TrainValTensorBoard
+from model.dead_relu_detector import DeadReluDetector
+from model.data_generator import generate_prog, read_data
 
 from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
@@ -31,7 +32,8 @@ def train():
             cur_time[3],
             cur_time[4]
         )
-    os.makedirs(log_dir)
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
     plot_model(model, to_file=log_dir+'/ChordNet.png', show_shapes=True, show_layer_names=True)  
 
     checkpoint = ModelCheckpoint(
@@ -45,23 +47,32 @@ def train():
         write_graph=True,
         histogram_freq=10,
         write_grads=True
-        )
-    callbacks_list = [checkpoint, tensorboard]
+        )    
 
     train_X, train_S, train_A, train_T, train_B = read_data("./data/train.txt")
     val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
 
-    H = model.fit(
-        train_X,
-        {"soprano": train_S, "alto": train_A, "tenor": train_T, "bass": train_B},
-        validation_data=(
+    dead_relu_detector = DeadReluDetector(x_train=train_X)
+
+    callbacks_list = [checkpoint, tensorboard, dead_relu_detector]
+
+    train_gen = generate_prog("./data/train.txt", BATCH_SIZE, aug=True)
+
+    H = model.fit_generator(
+        train_gen,
+        steps_per_epoch = 1971 // BATCH_SIZE,
+        epochs = EPOCHS,
+        verbose = 1,
+        callbacks = callbacks_list,
+        validation_data = (
             val_X,
-            {"soprano": val_S, "alto": val_A, "tenor": val_T, "bass": val_B}
-        ),
-        epochs=EPOCHS,
-        batch_size=BATCH_SIZE,
-        callbacks=callbacks_list,
-        verbose=2
+            {
+                "soprano": val_S,
+                "alto": val_A,
+                "tenor": val_T,
+                "bass": val_B
+            }
+        )
     )
 
 if __name__ == "__main__":
