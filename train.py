@@ -52,6 +52,13 @@ def train():
     train_X, train_S, train_A, train_T, train_B = read_data("./data/train.txt")
     val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
 
+    print("val_X.shape = {}".format(val_X.shape))
+    assert val_X.shape[1] == 41
+    assert val_S.shape[1] == 1
+    assert val_A.shape[1] == 1
+    assert val_T.shape[1] == 1
+    assert val_B.shape[1] == 1
+
     dead_relu_detector = DeadReluDetector(x_train=train_X)
 
     callbacks_list = [checkpoint, tensorboard, dead_relu_detector]
@@ -66,12 +73,7 @@ def train():
         callbacks = callbacks_list,
         validation_data = (
             val_X,
-            {
-                "soprano": val_S,
-                "alto": val_A,
-                "tenor": val_T,
-                "bass": val_B
-            }
+            {"soprano": val_S, "alto": val_A, "tenor": val_T, "bass": val_B}
         )
     )
 
