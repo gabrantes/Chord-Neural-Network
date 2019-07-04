@@ -6,12 +6,15 @@ logs/
 
 # Excel Files
 *.xlsx
+
+# Text Files
 *.txt
+!requirements.txt
 
 # Images
 *.png
 
-# Model file
+# Keras/Tensorflow Model Files
 *.hdf5
 
 # Byte-compiled / optimized / DLL files
