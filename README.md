@@ -10,11 +10,45 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-TODO
+* Python 3
+* pip OR pipenv
 
 ### Installing
 
-TODO
+1. Clone repository
+
+	 ```
+   git clone https://github.com/gabrantes/ChordNet.git
+   ``` 
+  
+2. Install requirements using pip OR pipenv
+
+   - Using pip:  
+     ```
+     pip install -r requirements.txt
+     ```    
+    
+   - Using pipenv:  
+     ```
+     pipenv sync  
+     ```
+
+### Running
+
+1. Preprocess data and save results in new text files in `data/`
+   ```
+   python preprocess.py
+   ```
+   
+2. Train model
+   ```
+   python train.py
+   ```
+   
+3. Make predictions using `data/test.txt`
+   ```
+   python predict.py
+   ```
 
 ## Built With
 
