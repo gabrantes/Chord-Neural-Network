@@ -65,6 +65,7 @@ def predict(input_file: str, weights: str):
         cur_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in cur_chords_num[i, :].tolist()]
 
     # print predictions
+    print("\n")
     for i in range(batch_size):
         out_str = "{}\t-->\t{}".format(cur_chords[i], next_chords[i])
         print(out_str)
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     parser  = argparse.ArgumentParser(description='Generate predictions from trained model.')
     parser.add_argument("--init",
         help="Filepath to model weights. DEFAULT: model.best.hdf5",
-        default='model.best.hdf5')
+        default='./model/model.best.hdf5')
     parser.add_argument("--input", 
         help="Filepath to processed dataset. DEFAULT: ./data/test.txt",
         default="./data/test.txt")

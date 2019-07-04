@@ -2,7 +2,7 @@
 .vscode/
 
 # Logs
-logs/
+logs/*
 
 # Excel Files
 *.xlsx

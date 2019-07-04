@@ -15,13 +15,13 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-1. Clone repository
+1. Clone repository.
 
 	 ```
    git clone https://github.com/gabrantes/ChordNet.git
    ``` 
   
-2. Install requirements using pip OR pipenv
+2. Install requirements using pip OR pipenv.
 
    - Using pip:  
      ```
@@ -32,28 +32,39 @@ These instructions will get you a copy of the project up and running on your loc
      ```
      pipenv sync  
      ```
+    
+3. Add project to PYTHONPATH so modules can be found.
+
+   ```
+   set PYTHONPATH=path/to/ChordNet
+   ```
 
 ### Running
 
-1. Preprocess data and save results in new text files in `data/`
+1. Preprocess data and save results in new text files in `data/`.
    ```
-   python preprocess.py
-   ```
-   
-2. Train model
-   ```
-   python train.py
+   python scripts/preprocess.py
    ```
    
-3. Make predictions using `data/test.txt`
+2. Train model.
    ```
-   python predict.py
+   python scripts/train.py
+   ```
+
+3. View metrics using TensorBoard.
+   ```
+   tensorboard --logdir=logs/
+   ```
+   
+4. Make predictions using testing split `data/test.txt`.
+   ```
+   python scripts/predict.py
    ```
 
 ## Built With
 
 * Python
-* Keras (Tensorflow backend)
+* Keras (TensorFlow backend)
 
 ## License
 
