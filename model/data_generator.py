@@ -93,6 +93,7 @@ def read_data(input_file):
     Returns:
         ndarray for each inputs, soprano, alto, tenor, and bass
     """
+    # get data
     dataset = []
     with open(input_file) as f:
         for line in f.read().splitlines():
@@ -101,6 +102,7 @@ def read_data(input_file):
 
     dataset = np.array(dataset, dtype=np.int32)
     
+    # split into inputs and outputs
     split = np.hsplit(dataset, [41])
     inputs, chord = split[0], split[1]
     split = np.hsplit(chord, 4)
