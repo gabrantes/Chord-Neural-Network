@@ -14,7 +14,7 @@ import argparse
 import numpy as np
 from utils.utils import note_to_num, num_to_note, one_hot
 from utils.aug import augment
-from utils.satb import Satb
+from satb.satb import Satb
 
 VERBOSE = False
 OUTPUT_DIR = './data'

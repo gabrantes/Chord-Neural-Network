@@ -12,8 +12,8 @@ import time
 import os
 
 from model.chordnet import ChordNet
-from model.train_val_tensorboard import TrainValTensorBoard
 from model.data_generator import generate_prog, read_data
+from utils.train_val_tensorboard import TrainValTensorBoard
 
 from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint

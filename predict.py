@@ -13,7 +13,7 @@ import numpy as np
 
 from model.chordnet import ChordNet
 from utils.utils import num_to_note_key
-from utils.satb import Satb
+from satb.satb import Satb
 
 def predict(input_file: str, weights: str):
     """Wrapper for model.predict with dynamic batch size, based on

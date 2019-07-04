@@ -8,8 +8,6 @@ Description:
     A set of various helper functions.
 """
 
-import matplotlib.pyplot as plt
-
 def note_to_num(note_str: str) -> int:
     """Convert a musical pitch from string representation to an integer.
 

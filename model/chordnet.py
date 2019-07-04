@@ -12,15 +12,34 @@ from keras.models import Model
 from keras.layers import Input, Dense, BatchNormalization, Activation
 from keras.initializers import he_normal, he_uniform
 from keras.optimizers import Adam
-from utils.satb import Satb
+from satb.satb import Satb
 
 class ChordNet():
     @staticmethod
     def build_voice_branch(name, inputs, voice_range, final_act='softmax'):
-        x = Dense(64, kernel_initializer=he_normal(), activation='relu')(inputs)
-        x = Dense(64, kernel_initializer=he_uniform(), activation='relu')(x)
-        x = Dense(64, kernel_initializer=he_uniform(), activation='relu')(x)
-        x = Dense(16, kernel_initializer=he_uniform(), activation='relu')(x)
+        x = Dense(
+            64,
+            kernel_initializer=he_normal(),
+            activation='relu'
+            )(inputs)
+
+        x = Dense(
+            64,
+            kernel_initializer=he_uniform(),
+            activation='relu'
+            )(x)
+
+        x = Dense(
+            64,
+            kernel_initializer=he_uniform(),
+            activation='relu'
+            )(x)
+
+        x = Dense(
+            16,
+            kernel_initializer=he_uniform(),
+            activation='relu'
+            )(x)
         output = Dense(voice_range, activation=final_act, name=name)(x)
 
         return output
@@ -28,8 +47,16 @@ class ChordNet():
     @staticmethod
     def build(input_shape=(41,), final_act='softmax'):
         inputs = Input(shape=input_shape)
-        shared = Dense(128, kernel_initializer=he_normal(), activation='relu')(inputs)
-        shared = Dense(128, kernel_initializer=he_normal())(shared)        
+        shared = Dense(
+            128,
+            kernel_initializer=he_normal(),
+            activation='relu'
+            )(inputs)
+
+        shared = Dense(
+            128, 
+            kernel_initializer=he_normal()
+            )(shared)        
         shared = BatchNormalization(scale=False)(shared)
         shared = Activation('relu')(shared)
 
@@ -66,10 +93,10 @@ class ChordNet():
             )
         
         losses = {
-        "soprano": "sparse_categorical_crossentropy",
-        "alto": "sparse_categorical_crossentropy",
-        "tenor": "sparse_categorical_crossentropy",
-        "bass": "sparse_categorical_crossentropy"
+            "soprano": "sparse_categorical_crossentropy",
+            "alto": "sparse_categorical_crossentropy",
+            "tenor": "sparse_categorical_crossentropy",
+            "bass": "sparse_categorical_crossentropy"
         }
         loss_weights = {
             "soprano": 1.0,
