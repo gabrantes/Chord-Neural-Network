@@ -12,7 +12,7 @@ from keras.models import Model
 from keras.layers import Input, Dense, BatchNormalization, Activation
 from keras.initializers import he_normal, he_uniform
 from keras.optimizers import Adam
-from satb.satb import Satb
+from utils.chorus.satb import Satb
 
 class ChordNet():
     @staticmethod

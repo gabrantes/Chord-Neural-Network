@@ -9,7 +9,7 @@ Description:
     soprano, alto, tenor, bass (SATB)
 """
 
-from satb.voice import Voice
+from utils.chorus.voice import Voice
 from utils.utils import num_to_note
 
 class Satb():

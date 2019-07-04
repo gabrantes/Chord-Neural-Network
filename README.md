@@ -41,7 +41,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Running
 
-1. Preprocess data and save results in new text files in `data/`.
+1. Preprocess data and save results as new text files in `data/`.
    ```
    python scripts/preprocess.py
    ```

@@ -8,7 +8,7 @@ Description:
     Contains functions for augmenting the dataeset.
 """
 
-from satb.satb import Satb
+from utils.chorus.satb import Satb
 from utils.utils import one_hot
 import numpy as np
 
