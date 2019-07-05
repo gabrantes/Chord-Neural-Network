@@ -1,8 +1,19 @@
 # ChordNet [WIP]
 
-In traditional music theory, there are many guidelines and rules when writing chord progressions for four voice parts. This is also referred to as four-part harmony. This project develops a multi-output regression model, ChordNet, to take a current chord and return the correct voicings for the next chord.
+ChordNet is a multi-output classification model for predicting chords. Given a key signature, type & voicings of the current chord, and type of the next chord, it can produce smooth voice-leading to the next chord, with 90% accuracy.
 
-"Tonal Harmony" (Kostka & Payne) is a popular music theory textbook that was used as the basis for this project. For example, the vocal ranges for each part were set as dictated in the book, and over 300 example chord progresions were used as 'seeds' for the dataset.
+For more details, see [Background](#background) and [Development](#development).
+
+## Table of Contents   
+   * [Getting Started](#getting-started)
+     * [Prerequisites](#prerequisites)
+     * [Installing](#installing)
+     * [Demo](#demo)
+     * [Training (optional)](#training-\(optional\))
+   * [Background](#background)
+   * [Development](#development)
+   * [Technologies](#technologies)
+   * [License](#license)
 
 ## Getting Started
 
@@ -17,7 +28,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1. Clone repository.
 
-	 ```
+   ```
    git clone https://github.com/gabrantes/ChordNet.git
    ``` 
   
@@ -35,11 +46,24 @@ These instructions will get you a copy of the project up and running on your loc
     
 3. Add project to PYTHONPATH so modules can be found.
 
+   - Windows
+     ```
+     set PYTHONPATH=path/to/ChordNet
+     ```
+     
+   - Unix
+     ```
+     export PYTHONPATH=path/to/ChordNet
+     ```
+     
+### Demo
+
+1. Run predictions script.
    ```
-   set PYTHONPATH=path/to/ChordNet
+   python scripts/predict.py
    ```
 
-### Running
+### Training (optional)
 
 1. Preprocess data and save results as new text files in `data/`.
    ```
@@ -56,12 +80,21 @@ These instructions will get you a copy of the project up and running on your loc
    tensorboard --logdir=logs/
    ```
    
-4. Make predictions using testing split `data/test.txt`.
+4. Run predictions script.
    ```
    python scripts/predict.py
    ```
+   
+## Background
 
-## Built With
+In traditional music theory, there are many guidelines and rules when writing chord progressions for four voice parts. This is also referred to as four-part harmony. 
+
+"Tonal Harmony" (Kostka & Payne) is a popular music theory textbook that was used as the basis for this project. For example, the vocal ranges for each part were set as dictated in the book, and over 300 example chord progresions were used as 'seeds' for the dataset.
+
+## Development
+TODO
+
+## Technologies
 
 * Python
 * Keras (TensorFlow backend)
