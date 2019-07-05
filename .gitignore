@@ -10,6 +10,7 @@ logs/*
 # Text Files
 *.txt
 !requirements.txt
+!test.txt
 
 # Images
 *.png
