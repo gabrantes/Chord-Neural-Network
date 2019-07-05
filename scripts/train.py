@@ -11,8 +11,8 @@ Description:
 import time
 import os
 
-from model.chordnet import ChordNet
-from model.data_generator import generate_prog, read_data
+from model.experimental_chordnet import ChordNet
+from model.experimental_generator import generate_prog, read_data
 from utils.train_val_tensorboard import TrainValTensorBoard
 
 from keras.utils.vis_utils import plot_model
@@ -26,7 +26,7 @@ def train():
     model.summary()
 
     cur_time = time.localtime()
-    log_dir = "./logs/{}.{}.{}{}".format(
+    log_dir = "./logs/exp/{}.{}.{}{}".format(
             cur_time[1],
             cur_time[2],
             cur_time[3],
@@ -37,7 +37,7 @@ def train():
     plot_model(model, to_file=log_dir+'/ChordNet.png', show_shapes=True, show_layer_names=True)  
 
     checkpoint = ModelCheckpoint(
-        "model/model.best.hdf5",
+        "model/model.exp.hdf5",
         monitor='val_loss',
         save_best_only=True
         )
@@ -66,7 +66,7 @@ def train():
         callbacks = callbacks_list,
         validation_data = (
             val_X,
-            {"soprano": val_S, "alto": val_A, "tenor": val_T, "bass": val_B}
+            {"alto": val_A, "tenor": val_T}
         )
     )
 
