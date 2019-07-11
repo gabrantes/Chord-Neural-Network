@@ -9,7 +9,7 @@ Description:
 """
 
 from keras.models import Model
-from keras.layers import Input, Dense, BatchNormalization, Activation
+from keras.layers import Input, Dense, BatchNormalization, PReLU
 from keras.initializers import he_normal, he_uniform
 from keras.optimizers import Adam
 from utils.chorus.satb import Satb
@@ -20,45 +20,57 @@ class ChordNet():
         x = Dense(
             64,
             kernel_initializer=he_normal(),
-            activation='relu'
             )(inputs)
 
-        x = Dense(
-            64,
-            kernel_initializer=he_uniform(),
-            activation='relu'
-            )(x)
+        x = PReLU()(x)
 
         x = Dense(
             64,
             kernel_initializer=he_uniform(),
-            activation='relu'
             )(x)
+
+        x = PReLU()(x)
+
+        x = Dense(
+            64,
+            kernel_initializer=he_uniform(),
+            )(x)
+
+        x = PReLU()(x)
 
         x = Dense(
             16,
             kernel_initializer=he_uniform(),
-            activation='relu'
             )(x)
+
+        x = PReLU()(x)
+
         output = Dense(voice_range, activation=final_act, name=name)(x)
 
         return output
 
     @staticmethod
-    def build(input_shape=(41,), final_act='softmax'):
+    def build(input_shape=(29,), final_act='softmax'):
         inputs = Input(shape=input_shape)
         shared = Dense(
             128,
             kernel_initializer=he_normal(),
-            activation='relu'
             )(inputs)
+        
+        shared = PReLU()(shared)
+
+        # shared = Dense(
+        #     128,
+        #     kernel_initializer=he_normal(),
+        #     activation='relu'
+        #     )(shared)
 
         shared = Dense(
             128, 
             kernel_initializer=he_normal()
             )(shared)        
         shared = BatchNormalization(scale=False)(shared)
-        shared = Activation('relu')(shared)
+        shared = PReLU()(shared)
 
         satb = Satb()
         soprano = ChordNet.build_voice_branch(

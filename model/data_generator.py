@@ -51,7 +51,7 @@ def generate_prog(input_file, batch_size, aug=True):
 
     count = 0
     while True:
-        inputs = np.zeros((batch_size, 41))
+        inputs = np.zeros((batch_size, 29))
         soprano = np.zeros((batch_size, 1))
         alto = np.zeros((batch_size, 1))
         tenor = np.zeros((batch_size, 1))
@@ -66,15 +66,15 @@ def generate_prog(input_file, batch_size, aug=True):
                 prog = augment(prog)
 
             # one-hotting categories
-            inputs[i, :12] = list(prog[0])
-            inputs[i, 12] = prog[1]
-            inputs[i, 13:20] = list(prog[2])
-            inputs[i, 20] = prog[3]
-            inputs[i, 21:25] = list(prog[4])
-            inputs[i, 25:29] = prog[5:9]
-            inputs[i, 29:36] = list(prog[9])
-            inputs[i, 36] = prog[10]
-            inputs[i, 37:] = list(prog[11])
+            inputs[i, :12] = list(prog[0])      # key
+            inputs[i, 12] = prog[1]             # Maj / Min
+            # inputs[i, 13:20] = list(prog[2])
+            # inputs[i, 20] = prog[3]
+            # inputs[i, 21:25] = list(prog[4])
+            inputs[i, 13:17] = prog[5:9]        # cur chord
+            inputs[i, 17:24] = list(prog[9])    # next chord degree
+            inputs[i, 24] = prog[10]            # next chord 7th
+            inputs[i, 25:] = list(prog[11])     # next chord inversion
 
             soprano[i]  = prog[12]
             alto[i]     = prog[13]
@@ -105,6 +105,12 @@ def read_data(input_file):
     # split into inputs and outputs
     split = np.hsplit(dataset, [41])
     inputs, chord = split[0], split[1]
+
+    inputs = np.asarray(inputs, dtype=np.int32)
+    inputs_1 = inputs[:, :13]
+    inputs_2 = inputs[:, 25:]
+    inputs = np.hstack((inputs_1, inputs_2))    
+
     split = np.hsplit(chord, 4)
     soprano, alto, tenor, bass = split[0], split[1], split[2], split[3]
 

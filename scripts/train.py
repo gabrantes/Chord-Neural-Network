@@ -19,14 +19,14 @@ from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
 
 EPOCHS = 100
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 
 def train():
     model = ChordNet.build()
     model.summary()
 
     cur_time = time.localtime()
-    log_dir = "./logs/{}.{}.{}{}".format(
+    log_dir = "./logs/feature_selection/{}.{}.{}{}".format(
             cur_time[1],
             cur_time[2],
             cur_time[3],
