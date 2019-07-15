@@ -21,25 +21,25 @@ class ChordNet():
             64,
             kernel_initializer=he_normal(),
             )(inputs)
-        x = PReLU()(x)        
+        x = Activation('relu')(x)        
 
         x = Dense(
             64,
             kernel_initializer=he_uniform(),
             )(x)
-        x = PReLU()(x)     
+        x = Activation('relu')(x)     
 
         x = Dense(
             64,
             kernel_initializer=he_uniform(),
             )(x)
-        x = PReLU()(x)     
+        x = Activation('relu')(x)     
 
         x = Dense(
             16,
             kernel_initializer=he_uniform(),
             )(x)
-        x = PReLU()(x)     
+        x = Activation('relu')(x)     
         output = Dense(voice_range, activation=final_act, name=name)(x)
 
         return output
@@ -51,14 +51,14 @@ class ChordNet():
             128,
             kernel_initializer=he_normal(),
             )(inputs)
-        shared = PReLU()(shared)
+        shared = Activation('relu')(shared)
 
         shared = Dense(
             128, 
             kernel_initializer=he_normal()
             )(shared)        
         shared = BatchNormalization(scale=False)(shared)
-        shared = PReLU()(shared)
+        shared = Activation('relu')(shared)
 
         satb = Satb()
         soprano = ChordNet.build_voice_branch(
