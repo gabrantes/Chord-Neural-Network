@@ -37,7 +37,7 @@ def train():
     plot_model(model, to_file=log_dir+'/ChordNet.png', show_shapes=True, show_layer_names=True)  
 
     checkpoint = ModelCheckpoint(
-        "model/model.best.hdf5",
+        "model/model.feat.hdf5",
         monitor='val_loss',
         save_best_only=True
         )
