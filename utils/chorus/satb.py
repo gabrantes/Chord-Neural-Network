@@ -111,4 +111,8 @@ class Satb():
         if self.valid_chord(unscaled_chord):
             return unscaled_chord
         else:
-            raise ValueError("Unscaled chord is invalid", chord, [num_to_note(el) for el in chord])
+            raise ValueError(
+                    "Unscaled chord is invalid",
+                    unscaled_chord,
+                    [num_to_note(el) for el in unscaled_chord]
+                )
