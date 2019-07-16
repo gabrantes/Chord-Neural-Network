@@ -195,11 +195,11 @@ if __name__ == "__main__":
         help="Percentage of train set. DEFAULT: 80",
         default=80)
     parser.add_argument("--val", type=float, 
-        help="Percentage of validation set. DEFAULT: 20",
-        default=20)
+        help="Percentage of validation set. DEFAULT: 19",
+        default=19)
     parser.add_argument("--test", type=float, 
-        help="Percentage of test set. DEFAULT: 0",
-        default=0)
+        help="Percentage of test set. DEFAULT: 1",
+        default=1)
     parser.add_argument("--input", 
         help="Filepath to dataset. DEFAULT: ./data/chords.csv",
         default="./data/chords.csv")
