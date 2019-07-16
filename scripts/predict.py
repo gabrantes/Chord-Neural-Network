@@ -32,12 +32,12 @@ def predict(input_file: str, weights: str):
     f.close()
 
     batch_size = len(lines)
-    inputs = np.zeros((batch_size, 41), dtype=np.int16)
+    inputs = np.zeros((batch_size, 45), dtype=np.int16)
     for i in range(batch_size):
-        inputs[i, :] = [int(el) for el in lines[i].split()[:41]]    
+        inputs[i, :] = [int(el) for el in lines[i].split()]    
 
     # predict
-    preds = model.predict(inputs, batch_size=batch_size)
+    preds = model.predict(inputs[:, :41], batch_size=batch_size)
 
     # process output predictions
     outs = np.zeros((batch_size, 4, 21))
@@ -47,6 +47,8 @@ def predict(input_file: str, weights: str):
 
     cur_chords_num = inputs[:, 25:29]
 
+    gt_chords_num = inputs[:, 41:]
+
     key_num = inputs[:, :12]
     key = np.zeros((batch_size, 2), dtype=np.int8)
     key[:, 0] = np.argmax(key_num, axis=1)  # tonic of key
@@ -54,20 +56,26 @@ def predict(input_file: str, weights: str):
 
     next_chords =  [None] * batch_size
     cur_chords = [None] * batch_size
+    gt_chords = [None] * batch_size
     
     # unscale notes, convert back to string representations
     satb = Satb()
     for i in range(batch_size):
         next_chords_num[i, :] = satb.unscale(next_chords_num[i, :].tolist())
-        cur_chords_num[i, :] = satb.unscale(cur_chords_num[i, :].tolist())              
+        cur_chords_num[i, :] = satb.unscale(cur_chords_num[i, :].tolist())  
+        gt_chords_num[i, :] = satb.unscale(gt_chords_num[i, :].tolist())            
         
         next_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in next_chords_num[i, :].tolist()]
         cur_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in cur_chords_num[i, :].tolist()]
+        gt_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in gt_chords_num[i, :].tolist()]
 
     # print predictions
     print("\n")
     for i in range(batch_size):
-        out_str = "{}\t-->\t{}".format(cur_chords[i], next_chords[i])
+        if next_chords[i] == gt_chords[i]:
+            out_str = "{}\t-->\t{}".format(cur_chords[i], next_chords[i])
+        else:
+            out_str = "{}\t-->\t{}\tCorrect: {}".format(cur_chords[i], next_chords[i], gt_chords[i])
         print(out_str)
 
     return next_chords
