@@ -36,6 +36,12 @@ def predict(input_file: str, weights: str):
 
     cur_chords_num = inputs[:, 13:17]
 
+    gt_chords_num = np.zeros((batch_size, 4))
+    gt_chords_num[:, 0] = next_S[:, 0]
+    gt_chords_num[:, 1] = next_A[:, 0]
+    gt_chords_num[:, 2] = next_T[:, 0]
+    gt_chords_num[:, 3] = next_B[:, 0]
+
     key_num = inputs[:, :12]
     key = np.zeros((batch_size, 2), dtype=np.int8)
     key[:, 0] = np.argmax(key_num, axis=1)  # tonic of key
@@ -43,20 +49,26 @@ def predict(input_file: str, weights: str):
 
     next_chords =  [None] * batch_size
     cur_chords = [None] * batch_size
+    gt_chords = [None] * batch_size
     
     # unscale notes, convert back to string representations
     satb = Satb()
     for i in range(batch_size):
         next_chords_num[i, :] = satb.unscale(next_chords_num[i, :].tolist())
-        cur_chords_num[i, :] = satb.unscale(cur_chords_num[i, :].tolist())              
+        cur_chords_num[i, :] = satb.unscale(cur_chords_num[i, :].tolist())   
+        gt_chords_num[i, :] = satb.unscale(gt_chords_num[i, :].tolist())           
         
         next_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in next_chords_num[i, :].tolist()]
         cur_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in cur_chords_num[i, :].tolist()]
+        gt_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in gt_chords_num[i, :].tolist()]
 
     # print predictions
     print("\n")
     for i in range(batch_size):
-        out_str = "{}\t-->\t{}".format(cur_chords[i], next_chords[i])
+        if next_chords[i] != gt_chords[i]:
+            out_str = "{}\t-->\t{}\tCorrect: {}\n".format(cur_chords[i], next_chords[i], gt_chords[i])
+        else:
+            out_str = "{}\t-->\t{}\n".format(cur_chords[i], next_chords[i])
         print(out_str)
 
     return next_chords
