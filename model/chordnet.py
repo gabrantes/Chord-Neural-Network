@@ -59,12 +59,6 @@ class ChordNet():
         
         shared = PReLU()(shared)
 
-        # shared = Dense(
-        #     128,
-        #     kernel_initializer=he_normal(),
-        #     activation='relu'
-        #     )(shared)
-
         shared = Dense(
             128, 
             kernel_initializer=he_normal()
@@ -72,31 +66,74 @@ class ChordNet():
         shared = BatchNormalization(scale=False)(shared)
         shared = PReLU()(shared)
 
+        shared = Dense(
+            128,
+            kernel_initializer=he_normal(),
+        )(shared)
+        shared = PReLU()(shared)
+
+        shared = Dense(
+            64,
+            kernel_initializer=he_uniform(),
+        )(shared)
+        shared = PReLU()(shared)
+
+        shared = Dense(
+            64,
+            kernel_initializer=he_uniform(),
+        )(shared)
+        shared = PReLU()(shared)
+
         satb = Satb()
-        soprano = ChordNet.build_voice_branch(
-            'soprano',
-            shared,
+
+        soprano = Dense(
             satb.voices[0].range,
-            final_act=final_act
-            )
-        alto = ChordNet.build_voice_branch(
-            'alto',
-            shared,
+            activation='softmax',
+            name="soprano"
+        )(shared)
+
+        alto = Dense(
             satb.voices[1].range,
-            final_act=final_act
-            )
-        tenor = ChordNet.build_voice_branch(
-            'tenor',
-            shared,
+            activation='softmax',
+            name="alto"
+        )(shared)
+
+        tenor = Dense(
             satb.voices[2].range,
-            final_act=final_act
-            )
-        bass = ChordNet.build_voice_branch(
-            'bass',
-            shared,
+            activation='softmax',
+            name="tenor"
+        )(shared)
+
+        bass = Dense(
             satb.voices[3].range,
-            final_act=final_act
-            )
+            activation='softmax',
+            name="bass"
+        )(shared)
+
+        # soprano = ChordNet.build_voice_branch(
+        #     'soprano',
+        #     shared,
+        #     satb.voices[0].range,
+        #     final_act=final_act
+        #     )
+        # alto = ChordNet.build_voice_branch(
+        #     'alto',
+        #     shared,
+        #     satb.voices[1].range,
+        #     final_act=final_act
+        #     )
+        # tenor = ChordNet.build_voice_branch(
+        #     'tenor',
+        #     shared,
+        #     satb.voices[2].range,
+        #     final_act=final_act
+        #     )
+        # bass = ChordNet.build_voice_branch(
+        #     'bass',
+        #     shared,
+        #     satb.voices[3].range,
+        #     final_act=final_act
+        #     )
 
         model = Model(
             inputs=inputs,
