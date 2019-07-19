@@ -9,6 +9,9 @@ verify_ssl = true
 tensorflow = "*"
 keras = "*"
 pydot = "*"
+panda = "*"
+pandas = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.7"

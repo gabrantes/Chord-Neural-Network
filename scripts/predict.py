@@ -10,9 +10,10 @@ Description:
 
 import argparse
 import numpy as np
+import pandas as pd
 
 from model.chordnet import ChordNet
-from utils.utils import num_to_note_key
+from utils.utils import num_to_note_key, num_to_note
 from utils.chorus.satb import Satb
 
 def predict(input_file: str, weights: str):
@@ -62,6 +63,8 @@ def predict(input_file: str, weights: str):
     next_chords =  [None] * batch_size
     cur_chords = [None] * batch_size
     gt_chords = [None] * batch_size
+    key_note = [None] * batch_size
+    notes_correct = [None] * batch_size
     
     # unscale notes, convert back to string representations
     satb = Satb()
@@ -78,14 +81,37 @@ def predict(input_file: str, weights: str):
         cur_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in cur_chords_num[i, :].tolist()]
         gt_chords[i] = [num_to_note_key(int(el), key[i, 0], key[i, 1]) for el in gt_chords_num[i, :].tolist()]
 
-    # print predictions
-    print("\n")
-    for i in range(batch_size):
-        if next_chords[i] == gt_chords[i]:
-            out_str = "{}\t-->\t{}\n".format(cur_chords[i], next_chords[i])
+        if next_chords[i] == "INVALID":
+            notes_correct[i] = 0
         else:
-            out_str = "{}\t-->\t{}\tCorrect: {}\n".format(cur_chords[i], next_chords[i], gt_chords[i])
-        print(out_str)
+            count = 0
+            for j in range(4):
+                if next_chords[i][j] == gt_chords[i][j]:
+                    count += 1
+            notes_correct[i] = count
+
+        key_note[i] = num_to_note(key[i, 0])
+    
+    # print predictions
+    df = pd.DataFrame(columns=[
+        'key', 'maj/min', 'cur_chord', 
+        'next_deg', 'next_sev', 'next_inv',
+        'pred_next', 'gt_next', 'notes_correct'
+        ])
+
+    df['key'] = key_note
+    df['maj/min'] = key[:, 1]
+    df['cur_chord'] = cur_chords
+    df['next_deg'] = np.argmax(feat_inputs[:, 17:24], axis=1) + 1
+    df['next_sev'] = feat_inputs[:, 24].astype('uint8')
+    df['next_inv'] = np.argmax(feat_inputs[:, 25:29], axis=1)
+    df['pred_next'] = next_chords
+    df['gt_next'] = gt_chords
+    df['notes_correct'] = notes_correct
+
+    print(df.to_string())
+
+    df.to_excel('output.xlsx')
 
     return next_chords
 
