@@ -90,12 +90,12 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
         sev_chord = False
         inv_chord = False
         if progressions[i][3] == 1 or progressions[i][10] == 1:  # if seventh chord           
-            aug_count = 10
+            # aug_count = 10
             beg_sev_chords += 1
             end_sev_chords += 1
             sev_chord = True
         if progressions[i][4][0] == 0 or progressions[i][11][0] == 0:  # if chord not in root-position
-            aug_count = 20
+            # aug_count = 20
             beg_inv_chords += 1
             end_inv_chords += 1
             inv_chord = True
