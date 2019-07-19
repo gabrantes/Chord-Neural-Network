@@ -26,7 +26,7 @@ def train():
     model.summary()
 
     cur_time = time.localtime()
-    log_dir = "./logs/{}.{}.{}{}".format(
+    log_dir = "./logs/dev/{}.{}.{}{}".format(
             cur_time[1],
             cur_time[2],
             cur_time[3],
