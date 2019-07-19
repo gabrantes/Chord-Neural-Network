@@ -19,7 +19,7 @@ from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
 
 EPOCHS = 100
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 
 def train():
     model = ChordNet.build()
