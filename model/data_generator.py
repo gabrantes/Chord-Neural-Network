@@ -109,7 +109,7 @@ def read_data(input_file):
     inputs = np.asarray(inputs, dtype=np.int32)
     inputs_1 = inputs[:, :13]
     inputs_2 = inputs[:, 25:]
-    inputs = np.hstack((inputs_1, inputs_2))    
+    inputs = np.hstack((inputs_1, inputs_2))
 
     split = np.hsplit(chord, 4)
     soprano, alto, tenor, bass = split[0], split[1], split[2], split[3]

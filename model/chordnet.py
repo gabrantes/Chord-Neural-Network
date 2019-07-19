@@ -9,7 +9,7 @@ Description:
 """
 
 from keras.models import Model
-from keras.layers import Input, Dense, BatchNormalization, PReLU
+from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout
 from keras.initializers import he_normal, he_uniform
 from keras.optimizers import Adam
 from utils.chorus.satb import Satb
@@ -17,35 +17,31 @@ from utils.chorus.satb import Satb
 class ChordNet():
     @staticmethod
     def build_voice_branch(name, inputs, voice_range, final_act='softmax'):
-        x = Dense(
-            64,
-            kernel_initializer=he_normal(),
-            )(inputs)
+        # x = Dense(
+        #     32,
+        #     kernel_initializer=he_normal(),
+        #     )(inputs)
+        # x = Activation('relu')(x)
 
-        x = PReLU()(x)
+        # x = Dense(
+        #     32,
+        #     kernel_initializer=he_uniform(),
+        #     )(x)
+        # x = Activation('relu')(x)
 
-        x = Dense(
-            64,
-            kernel_initializer=he_uniform(),
-            )(x)
+        # x = Dense(
+        #     32,
+        #     kernel_initializer=he_uniform(),
+        #     )(x)
+        # x = Activation('relu')(x)
 
-        x = PReLU()(x)
+        # x = Dense(
+        #     32,
+        #     kernel_initializer=he_uniform(),
+        #     )(x)
+        # x = Activation('relu')(x)
 
-        x = Dense(
-            64,
-            kernel_initializer=he_uniform(),
-            )(x)
-
-        x = PReLU()(x)
-
-        x = Dense(
-            16,
-            kernel_initializer=he_uniform(),
-            )(x)
-
-        x = PReLU()(x)
-
-        output = Dense(voice_range, activation=final_act, name=name)(x)
+        output = Dense(voice_range, activation=final_act, name=name)(inputs)
 
         return output
 
@@ -53,87 +49,83 @@ class ChordNet():
     def build(input_shape=(29,), final_act='softmax'):
         inputs = Input(shape=input_shape)
         shared = Dense(
-            128,
+            32,
             kernel_initializer=he_normal(),
-            )(inputs)
-        
-        shared = PReLU()(shared)
+            )(inputs)        
+        shared = Activation('relu')(shared)
 
         shared = Dense(
-            128, 
-            kernel_initializer=he_normal()
+            32,
+            kernel_initializer=he_normal(),
             )(shared)        
-        shared = BatchNormalization(scale=False)(shared)
-        shared = PReLU()(shared)
+        shared = Activation('relu')(shared)
+
 
         shared = Dense(
-            128,
+            32,
             kernel_initializer=he_normal(),
-        )(shared)
-        shared = PReLU()(shared)
+            )(shared)
+
+        # shared = Dropout(0.25)(shared)
+        # shared = BatchNormalization(scale=False)(shared)       
+        shared = Activation('relu')(shared)
+        
+        shared = Dense(
+            32,
+            kernel_initializer=he_normal(),
+            )(shared)        
+        shared = Activation('relu')(shared)
 
         shared = Dense(
-            64,
-            kernel_initializer=he_uniform(),
-        )(shared)
-        shared = PReLU()(shared)
+            32,
+            kernel_initializer=he_normal(),
+            )(shared)        
+        shared = Activation('relu')(shared)
 
         shared = Dense(
-            64,
-            kernel_initializer=he_uniform(),
-        )(shared)
-        shared = PReLU()(shared)
+            32,
+            kernel_initializer=he_normal(),
+            )(shared)        
+        shared = Activation('relu')(shared)
+
+        shared = Dense(
+            32,
+            kernel_initializer=he_normal(),
+            )(shared)        
+        shared = Activation('relu')(shared)
+
+        shared = Dense(
+            32,
+            kernel_initializer=he_normal(),
+            )(shared)        
+        shared = Activation('relu')(shared)
 
         satb = Satb()
 
-        soprano = Dense(
+        soprano = ChordNet.build_voice_branch(
+            'soprano',
+            shared,
             satb.voices[0].range,
-            activation='softmax',
-            name="soprano"
-        )(shared)
-
-        alto = Dense(
+            final_act=final_act
+            )
+        alto = ChordNet.build_voice_branch(
+            'alto',
+            shared,
             satb.voices[1].range,
-            activation='softmax',
-            name="alto"
-        )(shared)
-
-        tenor = Dense(
+            final_act=final_act
+            )
+        tenor = ChordNet.build_voice_branch(
+            'tenor',
+            shared,
             satb.voices[2].range,
-            activation='softmax',
-            name="tenor"
-        )(shared)
-
-        bass = Dense(
+            final_act=final_act
+            )
+        bass = ChordNet.build_voice_branch(
+            'bass',
+            shared,
             satb.voices[3].range,
-            activation='softmax',
-            name="bass"
-        )(shared)
-
-        # soprano = ChordNet.build_voice_branch(
-        #     'soprano',
-        #     shared,
-        #     satb.voices[0].range,
-        #     final_act=final_act
-        #     )
-        # alto = ChordNet.build_voice_branch(
-        #     'alto',
-        #     shared,
-        #     satb.voices[1].range,
-        #     final_act=final_act
-        #     )
-        # tenor = ChordNet.build_voice_branch(
-        #     'tenor',
-        #     shared,
-        #     satb.voices[2].range,
-        #     final_act=final_act
-        #     )
-        # bass = ChordNet.build_voice_branch(
-        #     'bass',
-        #     shared,
-        #     satb.voices[3].range,
-        #     final_act=final_act
-        #     )
+            final_act=final_act
+            )
 
         model = Model(
             inputs=inputs,
