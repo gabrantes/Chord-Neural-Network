@@ -11,7 +11,6 @@ Description:
 from keras.models import Model
 from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout
 from keras.initializers import he_normal, he_uniform
-from keras.optimizers import Adam
 from utils.chorus.satb import Satb
 
 class ChordNet():
@@ -41,6 +40,7 @@ class ChordNet():
         #     )(x)
         # x = Activation('relu')(x)
 
+        # output = Dense(voice_range, activation=final_act, name=name)(x)
         output = Dense(voice_range, activation=final_act, name=name)(inputs)
 
         return output
@@ -59,41 +59,13 @@ class ChordNet():
             kernel_initializer=he_normal(),
             )(shared)        
         shared = Activation('relu')(shared)
-
-
-        shared = Dense(
-            32,
-            kernel_initializer=he_normal(),
-            )(shared)
-
-        # shared = Dropout(0.25)(shared)
-        # shared = BatchNormalization(scale=False)(shared)       
-        shared = Activation('relu')(shared)
         
         shared = Dense(
             32,
             kernel_initializer=he_normal(),
-            )(shared)        
+            )(shared)   
         shared = Activation('relu')(shared)
-
-        shared = Dense(
-            32,
-            kernel_initializer=he_normal(),
-            )(shared)        
-        shared = Activation('relu')(shared)
-
-        shared = Dense(
-            32,
-            kernel_initializer=he_normal(),
-            )(shared)        
-        shared = Activation('relu')(shared)
-
-        shared = Dense(
-            32,
-            kernel_initializer=he_normal(),
-            )(shared)        
-        shared = Activation('relu')(shared)
-
+        
         shared = Dense(
             32,
             kernel_initializer=he_normal(),
@@ -131,26 +103,6 @@ class ChordNet():
             inputs=inputs,
             outputs=[soprano, alto, tenor, bass],
             name="ChordNet"
-            )
-        
-        losses = {
-            "soprano": "sparse_categorical_crossentropy",
-            "alto": "sparse_categorical_crossentropy",
-            "tenor": "sparse_categorical_crossentropy",
-            "bass": "sparse_categorical_crossentropy"
-        }
-        loss_weights = {
-            "soprano": 1.0,
-            "alto": 1.0,
-            "tenor": 1.0,
-            "bass": 1.0
-        }
-
-        model.compile(
-            optimizer=Adam(), 
-            loss=losses, 
-            loss_weights=loss_weights,
-            metrics=['sparse_categorical_accuracy']
             )
         
         return model

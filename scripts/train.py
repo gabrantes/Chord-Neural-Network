@@ -10,12 +10,14 @@ Description:
 
 import time
 import os
+import math
 
 from model.chordnet import ChordNet
 from model.data_generator import generate_prog, read_data
 from utils.train_val_tensorboard import TrainValTensorBoard
 
 from keras.utils.vis_utils import plot_model
+from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 
 EPOCHS = 100
@@ -23,7 +25,27 @@ BATCH_SIZE = 16
 
 def train():
     model = ChordNet.build()
-    model.summary()
+    model.summary() 
+        
+    losses = {
+        "soprano": "sparse_categorical_crossentropy",
+        "alto": "sparse_categorical_crossentropy",
+        "tenor": "sparse_categorical_crossentropy",
+        "bass": "sparse_categorical_crossentropy"
+    }
+    loss_weights = {
+        "soprano": 1.0,
+        "alto": 1.0,
+        "tenor": 1.0,
+        "bass": 1.0
+    }
+
+    model.compile(
+        optimizer=Adam(), 
+        loss=losses, 
+        loss_weights=loss_weights,
+        metrics=['sparse_categorical_accuracy']
+        )
 
     cur_time = time.localtime()
     log_dir = "./logs/feature_selection/{}.{}.{}{}".format(
@@ -45,7 +67,7 @@ def train():
     tensorboard = TrainValTensorBoard(
         log_dir=log_dir,
         write_graph=True,
-        )    
+        )
 
     num_train_data = 0
     with open("./data/train.txt") as f:
