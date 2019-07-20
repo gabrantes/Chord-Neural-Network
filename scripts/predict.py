@@ -15,8 +15,9 @@ import pandas as pd
 from model.chordnet import ChordNet
 from utils.utils import num_to_note_key, num_to_note
 from utils.chorus.satb import Satb
+from keras.models import load_model
 
-def predict(input_file: str, weights: str):
+def predict(input_file: str, model: str):
     """Wrapper for model.predict with dynamic batch size, based on
     size of input file.
 
@@ -24,9 +25,8 @@ def predict(input_file: str, weights: str):
         input_file: filepath to processed dataset (.txt)
     """
     # load model
-    model = ChordNet.build()
-    print("Loading weights from {}".format(weights))
-    model.load_weights(weights)
+    print("Loading model from {}".format(model))
+    model = load_model(model)
 
     # get inputs
     with open(input_file) as f:
@@ -44,12 +44,17 @@ def predict(input_file: str, weights: str):
     feat_inputs[:, 17:29] = inputs[:, 29:41]
 
     # predict
-    preds = model.predict(feat_inputs, batch_size=batch_size)
+    pred_s, pred_a, pred_t, pred_b = model.predict(feat_inputs, batch_size=batch_size)
 
     # process output predictions
     outs = np.zeros((batch_size, 4, 21))
-    for i in range(4):
-        outs[:, i, :len(preds[i][0])] = np.asarray(preds[i])        
+
+    outs[:, 0, :len(pred_s[0])] = np.asarray(pred_s)
+    outs[:, 1, :len(pred_a[0])] = np.asarray(pred_a)
+    outs[:, 2, :len(pred_t[0])] = np.asarray(pred_t)
+    outs[:, 3, :len(pred_b[0])] = np.asarray(pred_b)
+    # outs = (batch_size, voice, note)
+     
     next_chords_num = np.argmax(outs, axis=2)  
 
     cur_chords_num = inputs[:, 25:29]
@@ -111,6 +116,8 @@ def predict(input_file: str, weights: str):
 
     print(df.to_string())
 
+    print("\nNotes correct:\t{}".format(sum(notes_correct)))
+
     df.to_excel('output.xlsx')
 
     return next_chords
@@ -118,7 +125,7 @@ def predict(input_file: str, weights: str):
 if __name__ == "__main__":
     parser  = argparse.ArgumentParser(description='Generate predictions from trained model.')
     parser.add_argument("--init",
-        help="Filepath to model weights. DEFAULT: model.feat.hdf5",
+        help="Filepath to model. DEFAULT: model.feat.hdf5",
         default='./model/model.feat.hdf5')
     parser.add_argument("--input", 
         help="Filepath to processed dataset. DEFAULT: ./data/test.txt",

@@ -20,7 +20,7 @@ from keras.utils.vis_utils import plot_model
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 
-EPOCHS = 100
+EPOCHS = 150
 BATCH_SIZE = 16
 
 def train():
@@ -58,8 +58,14 @@ def train():
         os.makedirs(log_dir)
     plot_model(model, to_file=log_dir+'/ChordNet.png', show_shapes=True, show_layer_names=True)  
 
-    checkpoint = ModelCheckpoint(
+    checkpoint1 = ModelCheckpoint(
         "model/model.feat.hdf5",
+        monitor='val_loss',
+        save_best_only=True
+        )
+
+    checkpoint2 = ModelCheckpoint(
+        log_dir + "/model.feat.hdf5",
         monitor='val_loss',
         save_best_only=True
         )
@@ -76,7 +82,7 @@ def train():
 
     val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
 
-    callbacks_list = [checkpoint, tensorboard]
+    callbacks_list = [checkpoint1, checkpoint2, tensorboard]
 
     train_gen = generate_prog("./data/train.txt", BATCH_SIZE, aug=True)
 
