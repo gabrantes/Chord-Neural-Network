@@ -71,12 +71,21 @@ def train():
     pred_out = np_to_note(pred_Y).tolist()
     test_out = np_to_note(test_Y).tolist()
     test_cur = np_to_note(test_cur).tolist()
+
     key_note = np_to_note(key[:, 0]).tolist()
+
+    notes_correct = [0] * len(test_out)
+    for i in range(len(test_out)):
+        count = 0
+        for j in range(4):
+            if test_out[i][j] == pred_out[i][j]:
+                count += 1
+        notes_correct[i] = count
 
     df = pd.DataFrame(columns=[
         'key', 'maj/min', 'cur_chord',
         'next_deg', 'next_sev', 'next_inv',
-        'pred_next', 'gt_next'
+        'pred_next', 'gt_next', 'notes_correct'
         ])
 
     df['key'] = key_note
@@ -90,6 +99,7 @@ def train():
 
     df['pred_next'] = pred_out
     df['gt_next'] = test_out
+    df['notes_correct'] = notes_correct
 
     print(df.to_string())
 
