@@ -86,7 +86,7 @@ def train_eval_split(input_file: str, percent_train=80, percent_val=20, percent_
         if VERBOSE:
             print(i)        
 
-        aug_count = 10  # number of augmentations to create
+        aug_count = 20  # number of augmentations to create
         sev_chord = False
         inv_chord = False
         if progressions[i][3] == 1 or progressions[i][10] == 1:  # if seventh chord           
