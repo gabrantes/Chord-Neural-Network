@@ -20,7 +20,7 @@ from keras.utils.vis_utils import plot_model
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 
-EPOCHS = 150
+EPOCHS = 100
 BATCH_SIZE = 16
 
 def train():

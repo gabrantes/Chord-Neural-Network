@@ -14,7 +14,7 @@ import numpy as np
 from utils.utils import one_hot
 from utils.aug import augment
 
-def generate_prog(input_file, batch_size, aug=True):
+def generate_prog(input_file, batch_size, aug=False):
     """Custom generator for use with Keras fit_generator.
     Performs real-time data augmentation by transposing chord progressions
     to random keys.

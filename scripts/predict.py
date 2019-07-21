@@ -73,6 +73,7 @@ def predict(input_file: str, model: str):
     
     # unscale notes, convert back to string representations
     satb = Satb()
+    num_correct = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     for i in range(batch_size):
         try:
             next_chords_num[i, :] = satb.unscale(next_chords_num[i, :].tolist())
@@ -94,6 +95,7 @@ def predict(input_file: str, model: str):
                 if next_chords[i][j] == gt_chords[i][j]:
                     count += 1
             notes_correct[i] = count
+            num_correct[count] += 1
 
         key_note[i] = num_to_note(key[i, 0])
     
@@ -114,9 +116,14 @@ def predict(input_file: str, model: str):
     df['gt_next'] = gt_chords
     df['notes_correct'] = notes_correct
 
-    print(df.to_string())
+    # print(df.to_string())
 
     print("\nNotes correct:\t{}".format(sum(notes_correct)))
+
+    print("\n")
+    print("Notes correct\t# chords\t% chords")
+    for key, val in num_correct.items():
+        print("{}\t\t{}\t\t{}".format(key, val, val/len(next_chords)))
 
     df.to_excel('output.xlsx')
 
@@ -128,8 +135,8 @@ if __name__ == "__main__":
         help="Filepath to model. DEFAULT: model.feat.hdf5",
         default='./model/model.feat.hdf5')
     parser.add_argument("--input", 
-        help="Filepath to processed dataset. DEFAULT: ./data/test.txt",
-        default="./data/test.txt")
+        help="Filepath to processed dataset. DEFAULT: ./data/val.txt",
+        default="./data/val.txt")
 
     args = parser.parse_args()
 
