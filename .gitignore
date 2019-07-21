@@ -6,6 +6,8 @@ logs/*
 
 # Excel Files
 *.xlsx
+*.csv
+!chords.csv
 
 # Text Files
 *.txt
