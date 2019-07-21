@@ -9,10 +9,14 @@ Description:
 """
 
 from model.data_generator import read_data
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
+from sklearn.metrics import f1_score, precision_score, recall_score
+
 from utils.chorus.satb import Satb
 from utils.utils import num_to_note
+
 import numpy as np
 import pandas as pd
 
@@ -26,7 +30,7 @@ def train():
 
     # val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
 
-    test_X, test_S, test_A, test_T, test_B = read_data("./data/test.txt")
+    test_X, test_S, test_A, test_T, test_B = read_data("./data/val.txt")
     test_Y = np.hstack((test_S, test_A, test_T, test_B))
 
     if test_X.shape[0] != test_Y.shape[0]:
@@ -45,6 +49,15 @@ def train():
     """
     # get predictions
     pred_Y = clf.predict(test_X)
+
+    # get accuracy
+    f1 = [0] * 4
+    precision = [0] * 4
+    recall = [0] * 4
+    for i in range(4):
+        f1[i] = f1_score(test_Y[:, i], pred_Y[:, i], average='micro')
+        precision[i] = precision_score(test_Y[:, i], pred_Y[:, i], average='micro')
+        recall[i] = recall_score(test_Y[:, i], pred_Y[:, i], average='micro')
 
     # get gt key
     key_num = test_X[:, :12]
@@ -66,6 +79,17 @@ def train():
     test_Y = np.apply_along_axis(satb.unscale, 1, test_Y)
     test_cur = np.apply_along_axis(satb.unscale, 1, test_cur)
 
+    num_correct = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+
+    notes_correct = [0] * len(test_Y)
+    for i in range(len(test_Y)):
+        count = 0
+        for j in range(4):
+            if test_Y[i][j] == pred_Y[i][j]:
+                count += 1
+        num_correct[count] += 1
+        notes_correct[i] = count
+
     np_to_note = np.vectorize(num_to_note)
 
     pred_out = np_to_note(pred_Y).tolist()
@@ -73,14 +97,6 @@ def train():
     test_cur = np_to_note(test_cur).tolist()
 
     key_note = np_to_note(key[:, 0]).tolist()
-
-    notes_correct = [0] * len(test_out)
-    for i in range(len(test_out)):
-        count = 0
-        for j in range(4):
-            if test_out[i][j] == pred_out[i][j]:
-                count += 1
-        notes_correct[i] = count
 
     df = pd.DataFrame(columns=[
         'key', 'maj/min', 'cur_chord',
@@ -101,7 +117,14 @@ def train():
     df['gt_next'] = test_out
     df['notes_correct'] = notes_correct
 
-    print(df.to_string())
+    print("\n")
+    print("Notes correct\t# chords\t% chords")
+    for key, val in num_correct.items():
+        print("{}\t\t{}\t\t{}".format(key, val, val/len(test_Y)))
+            
+    print("\nPrecision:\n\t{}".format(precision))
+    print("\nRecall:\n\t{}".format(recall))
+    print("\nF1:\n\t{}".format(f1))
 
     df.to_csv('output.csv')
 
