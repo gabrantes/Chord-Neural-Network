@@ -99,4 +99,6 @@ def train():
     )
 
 if __name__ == "__main__":
+    print("whoops. you're in the scikit branch. i think you meant to run sk_train.py\n")
+    exit()
     train()
