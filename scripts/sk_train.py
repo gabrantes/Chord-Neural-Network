@@ -28,7 +28,8 @@ def train():
     if train_X.shape[0] != train_Y.shape[0]:
         raise ValueError("Train inputs and outputs must have similar shape.", train_X.shape, train_Y.shape)
 
-    # val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
+    val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
+    val_Y = np.hstack((val_S, val_A, val_T, val_B))
 
     test_X, test_S, test_A, test_T, test_B = read_data("./data/val.txt")
     test_Y = np.hstack((test_S, test_A, test_T, test_B))
@@ -54,10 +55,11 @@ def train():
     f1 = [0] * 4
     precision = [0] * 4
     recall = [0] * 4
+    pred_val_Y = clf.predict(val_X)
     for i in range(4):
-        f1[i] = f1_score(test_Y[:, i], pred_Y[:, i], average='micro')
-        precision[i] = precision_score(test_Y[:, i], pred_Y[:, i], average='micro')
-        recall[i] = recall_score(test_Y[:, i], pred_Y[:, i], average='micro')
+        f1[i] = f1_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
+        precision[i] = precision_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
+        recall[i] = recall_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
 
     # get gt key
     key_num = test_X[:, :12]
@@ -75,28 +77,38 @@ def train():
 
     # convert all ints to notes
     satb = Satb()
-    pred_Y = np.apply_along_axis(satb.unscale, 1, pred_Y)
+
+    pred_out = [None] * pred_Y.shape[0]
+    for i in range(pred_Y.shape[0]):
+        try:
+            pred_out[i] = [num_to_note(el) for el in satb.unscale(pred_Y[i, :])]
+        except Exception as e:
+            pred_out[i] = ["INVALID"]
+
+    # pred_Y = np.apply_along_axis(satb.unscale, 1, pred_Y)
     test_Y = np.apply_along_axis(satb.unscale, 1, test_Y)
     test_cur = np.apply_along_axis(satb.unscale, 1, test_cur)
 
-    num_correct = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
-
-    notes_correct = [0] * len(test_Y)
-    for i in range(len(test_Y)):
-        count = 0
-        for j in range(4):
-            if test_Y[i][j] == pred_Y[i][j]:
-                count += 1
-        num_correct[count] += 1
-        notes_correct[i] = count
-
     np_to_note = np.vectorize(num_to_note)
 
-    pred_out = np_to_note(pred_Y).tolist()
+    # pred_out = np_to_note(pred_Y).tolist()
     test_out = np_to_note(test_Y).tolist()
     test_cur = np_to_note(test_cur).tolist()
 
     key_note = np_to_note(key[:, 0]).tolist()
+
+    num_correct = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+    notes_correct = [0] * len(test_out)
+    for i in range(len(test_out)):
+        count = 0
+        for j in range(4):
+            if len(pred_out[i]) != 4:
+                break
+            if test_out[i][j] == pred_out[i][j]:
+                count += 1
+        num_correct[count] += 1
+        notes_correct[i] = count
+
 
     df = pd.DataFrame(columns=[
         'key', 'maj/min', 'cur_chord',
