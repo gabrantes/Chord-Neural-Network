@@ -1,6 +1,6 @@
 # ChordNet [WIP]
 
-ChordNet is a multi-output classification model for predicting chords. Given a key signature, type & voicings of the current chord, and type of the next chord, it can produce smooth voice-leading to the next chord, with 90% accuracy.
+ChordNet is a multi-output classification model for predicting chords.
 
 For more details, see [Background](#background) and [Development](#development).
 
